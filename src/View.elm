@@ -42,6 +42,7 @@ import Svg.Attributes as SA
         , cx
         , cy
         )
+import Dict exposing (Dict)
 
 
 view : Model -> Html Msg
@@ -58,41 +59,28 @@ view model =
         , div
             [ class Pure.grid ]
             [ sidebar model.mouse
-            , drawingArea
+            , drawingArea model.shapes
             ]
         ]
 
 
-drawingArea : Html Msg
-drawingArea =
-    let
-        rectModel =
-            { x = "20"
-            , y = "20"
-            , width = "20"
-            , height = "20"
-            , stroke = "black"
-            , fill = "transparent"
-            }
-
-        circleModel =
-            { cx = "50"
-            , cy = "20"
-            , r = "5"
-            , stroke = "red"
-            , fill = "yellow"
-            }
-    in
-        section
-            [ class <| "drawing-area " ++ Pure.unit [ "7", "8" ] ]
-            [ svg
-                [ viewBox "0 0 100 100"
-                , preserveAspectRatio "xMidYMin slice"
-                ]
-                [ viewShape (Rect rectModel)
-                , viewShape (Circle circleModel)
-                ]
+drawingArea : Dict Int Shape -> Html Msg
+drawingArea shapesDict =
+    section
+        [ class <| "drawing-area " ++ Pure.unit [ "7", "8" ] ]
+        [ svg
+            [ viewBox "0 0 100 100"
+            , preserveAspectRatio "xMidYMin slice"
             ]
+            (viewShapes shapesDict)
+        ]
+
+
+viewShapes : Dict Int Shape -> List (Svg Msg)
+viewShapes shapesDict =
+    shapesDict
+        |> Dict.toList
+        |> List.map (viewShape << Tuple.second)
 
 
 viewShape : Shape -> Svg Msg
