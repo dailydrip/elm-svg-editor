@@ -79,8 +79,11 @@ module.exports = {
       }
     ]
   },
-  postcss: function() {
+  postcss: function(webpack) {
     return [
+      require("postcss-import")({ addDependencyTo: webpack }),
+      require("postcss-url")(),
+      require("postcss-cssnext")(),
       autoprefixer({
         browsers: [
           '>1%',
@@ -88,7 +91,9 @@ module.exports = {
           'Firefox ESR',
           'not ie < 9'
         ]
-      })
+      }),
+      require("postcss-browser-reporter")(),
+      require("postcss-reporter")(),
     ];
   },
   plugins: [

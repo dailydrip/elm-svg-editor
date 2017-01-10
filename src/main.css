@@ -1,5 +1,25 @@
+:root {
+  --backgroundColor: #eee;
+  --primaryColor: #293c4b;
+  --darkInterfaceColor: #293c4b;
+  --darkInterfaceTextColor: white;
+}
+
 body {
   font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
   margin: 0;
-  color: #293c4b;
+  color: var(--primaryColor);
+  height: 100%;
+}
+
+.mouse-status {
+  background-color: var(--primaryColor);
+  height: 100vh;
+  padding: 1em;
+  color: var(--darkInterfaceTextColor);
+}
+
+.drawing-area {
+  background-color: var(--backgroundColor);
+  height: 100vh;
 }

@@ -3,6 +3,7 @@ module App exposing (..)
 import Html exposing (Html, text, div, dl, dd, dt, h2, section)
 import Html.Attributes exposing (class)
 import Mouse
+import Pure
 
 
 type alias Model =
@@ -64,7 +65,8 @@ update msg ({ mouse } as model) =
 
 view : Model -> Html Msg
 view model =
-    div []
+    div
+        [ class Pure.grid ]
         [ mouseStatus model.mouse
         , drawingArea
         ]
@@ -73,14 +75,14 @@ view model =
 drawingArea : Html Msg
 drawingArea =
     section
-        [ class "drawing-area" ]
-        []
+        [ class <| "drawing-area " ++ Pure.unit [ "7", "8" ] ]
+        [ text "foo" ]
 
 
 mouseStatus : MouseModel -> Html Msg
 mouseStatus mouse =
     section
-        [ class "mouse-status" ]
+        [ class <| "mouse-status " ++ Pure.unit [ "1", "8" ] ]
         [ h2 [] [ text "Mouse" ]
         , dl []
             [ dt [] [ text "Position" ]
