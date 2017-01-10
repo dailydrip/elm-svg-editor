@@ -3,23 +3,45 @@
   --primaryColor: #293c4b;
   --darkInterfaceColor: #293c4b;
   --darkInterfaceTextColor: white;
+  --headerBackgroundColor: color(var(--darkInterfaceColor) blackness(+20%));
+  --darkLinkColor: color(blue lightness(+40%));
 }
 
 body {
   font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
   margin: 0;
   color: var(--primaryColor);
-  height: 100%;
+}
+
+header {
+  height: 5vh;
+  padding: 1em;
+  background-color: var(--headerBackgroundColor);
+  color: var(--darkInterfaceTextColor);
+}
+
+header h1 {
+  margin: 0;
+  display: inline-block;
+}
+
+header p {
+  display: inline-block;
+  margin-left: 1em;
+}
+
+header p a {
+  color: var(--darkLinkColor);
 }
 
 .mouse-status {
   background-color: var(--primaryColor);
-  height: 100vh;
+  height: 95vh;
   padding: 1em;
   color: var(--darkInterfaceTextColor);
 }
 
 .drawing-area {
   background-color: var(--backgroundColor);
-  height: 100vh;
+  height: 95vh;
 }

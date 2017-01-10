@@ -1,7 +1,7 @@
 module App exposing (..)
 
-import Html exposing (Html, text, div, dl, dd, dt, h2, section)
-import Html.Attributes exposing (class)
+import Html exposing (Html, text, div, dl, dd, dt, h2, section, header, h1, p, a)
+import Html.Attributes exposing (class, href)
 import Mouse
 import Pure
 
@@ -65,10 +65,20 @@ update msg ({ mouse } as model) =
 
 view : Model -> Html Msg
 view model =
-    div
-        [ class Pure.grid ]
-        [ mouseStatus model.mouse
-        , drawingArea
+    div []
+        [ header
+            []
+            [ h1 [] [ text "Elm SVG Editor" ]
+            , p []
+                [ text "from "
+                , a [ href "https://www.dailydrip.com" ] [ text "DailyDrip" ]
+                ]
+            ]
+        , div
+            [ class Pure.grid ]
+            [ mouseStatus model.mouse
+            , drawingArea
+            ]
         ]
 
 
