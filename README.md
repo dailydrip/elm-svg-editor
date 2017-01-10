@@ -3,11 +3,15 @@
 
 ## Running it
 
-This app was created using
-[create-elm-app](https://github.com/halfzebra/create-elm-app). To run it, you
-can do the following:
+Install the dependencies:
 
 ```sh
-npm install -g create-elm-app
-elm-app start
+$ elm package install -y
+$ yarn
+```
+
+Then you can run the app with:
+
+```sh
+$ npm run start
 ```

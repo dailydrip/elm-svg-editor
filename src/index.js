@@ -1,7 +1,13 @@
-require('./main.css');
-var logoPath = require('./logo.svg');
-var Elm = require('./Main.elm');
+// PureCSS styles
+require('purecss/build/pure-min.css')
+require('purecss/build/grids-responsive-min.css')
+require('purecss/build/buttons-min.css')
 
-var root = document.getElementById('root');
+// Custom styles
+require('./main.css')
 
-Elm.Main.embed(root, logoPath);
+let Elm = require('./Main.elm')
+
+let root = document.getElementById('root')
+
+Elm.Main.embed(root, null)

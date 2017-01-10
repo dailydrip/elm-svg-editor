@@ -1,37 +1,100 @@
 module App exposing (..)
 
-import Html exposing (Html, text, div, img)
-import Html.Attributes exposing (src)
+import Html exposing (Html, text, div, dl, dd, dt, h2, section)
+import Html.Attributes exposing (class)
+import Mouse
 
 
 type alias Model =
-    { message : String
-    , logo : String
+    { mouse : MouseModel
     }
 
 
-init : String -> ( Model, Cmd Msg )
-init path =
-    ( { message = "Your Elm App is working!", logo = path }, Cmd.none )
+type alias MouseModel =
+    { position : Mouse.Position
+    , down : Bool
+    }
+
+
+initialModel : Model
+initialModel =
+    Model <|
+        MouseModel { x = 0, y = 0 } False
+
+
+init : () -> ( Model, Cmd Msg )
+init flags =
+    initialModel ! []
 
 
 type Msg
     = NoOp
+    | MouseMove Mouse.Position
+    | MouseDown Mouse.Position
+    | MouseUp Mouse.Position
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    ( model, Cmd.none )
+update msg ({ mouse } as model) =
+    case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
+        MouseMove pos ->
+            let
+                nextMouse =
+                    { mouse | position = pos }
+            in
+                { model | mouse = nextMouse } ! []
+
+        MouseDown pos ->
+            let
+                nextMouse =
+                    { mouse | down = True }
+            in
+                { model | mouse = nextMouse } ! []
+
+        MouseUp pos ->
+            let
+                nextMouse =
+                    { mouse | down = False }
+            in
+                { model | mouse = nextMouse } ! []
 
 
 view : Model -> Html Msg
 view model =
     div []
-        [ img [ src model.logo ] []
-        , div [] [ text model.message ]
+        [ mouseStatus model.mouse
+        , drawingArea
+        ]
+
+
+drawingArea : Html Msg
+drawingArea =
+    section
+        [ class "drawing-area" ]
+        []
+
+
+mouseStatus : MouseModel -> Html Msg
+mouseStatus mouse =
+    section
+        [ class "mouse-status" ]
+        [ h2 [] [ text "Mouse" ]
+        , dl []
+            [ dt [] [ text "Position" ]
+            , dd [] [ text <| toString mouse.position ]
+            , dt [] [ text "Down?" ]
+            , dd [] [ text <| toString mouse.down ]
+            ]
         ]
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ Mouse.moves MouseMove
+        , Mouse.downs MouseDown
+        , Mouse.ups MouseUp
+        ]
