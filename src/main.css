@@ -34,11 +34,19 @@ header p a {
   color: var(--darkLinkColor);
 }
 
-.mouse-status {
+.sidebar {
   background-color: var(--primaryColor);
   height: 95vh;
   padding: 1em;
   color: var(--darkInterfaceTextColor);
+}
+
+.sidebar dl {
+  font-size: 75%;
+}
+
+.sidebar dt {
+  font-weight: bold;
 }
 
 .drawing-area {

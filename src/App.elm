@@ -1,6 +1,21 @@
 module App exposing (..)
 
-import Html exposing (Html, text, div, dl, dd, dt, h2, section, header, h1, p, a)
+import Html
+    exposing
+        ( Html
+        , a
+        , dd
+        , div
+        , dl
+        , dt
+        , h1
+        , h2
+        , h3
+        , header
+        , p
+        , section
+        , text
+        )
 import Html.Attributes exposing (class, href)
 import Mouse
 import Pure
@@ -76,7 +91,7 @@ view model =
             ]
         , div
             [ class Pure.grid ]
-            [ mouseStatus model.mouse
+            [ sidebar model.mouse
             , drawingArea
             ]
         ]
@@ -89,11 +104,11 @@ drawingArea =
         [ text "foo" ]
 
 
-mouseStatus : MouseModel -> Html Msg
-mouseStatus mouse =
+sidebar : MouseModel -> Html Msg
+sidebar mouse =
     section
-        [ class <| "mouse-status " ++ Pure.unit [ "1", "8" ] ]
-        [ h2 [] [ text "Mouse" ]
+        [ class <| "sidebar " ++ Pure.unit [ "1", "8" ] ]
+        [ h3 [] [ text "Mouse" ]
         , dl []
             [ dt [] [ text "Position" ]
             , dd [] [ text <| toString mouse.position ]
