@@ -1,4 +1,4 @@
-module Msg exposing (Msg(..))
+module Msg exposing (Msg(..), ModifyShapeMsg(..))
 
 import Mouse
 
@@ -8,3 +8,8 @@ type Msg
     | MouseMove Mouse.Position
     | MouseDown Mouse.Position
     | MouseUp Mouse.Position
+    | ModifyShape Int ModifyShapeMsg
+
+
+type ModifyShapeMsg
+    = IncreaseWidth Float

@@ -26,7 +26,7 @@ import Model
         , CircleModel
         , Shape(..)
         )
-import Msg exposing (Msg)
+import Msg exposing (Msg(ModifyShape), ModifyShapeMsg(..))
 import Svg exposing (Svg, svg, rect, circle)
 import Svg.Attributes as SA
     exposing
@@ -42,6 +42,7 @@ import Svg.Attributes as SA
         , cx
         , cy
         )
+import Svg.Events exposing (onClick)
 import Dict exposing (Dict)
 
 
@@ -79,41 +80,44 @@ drawingArea shapesDict =
 viewShapes : Dict Int Shape -> List (Svg Msg)
 viewShapes shapesDict =
     shapesDict
+        |> Dict.map viewShape
         |> Dict.toList
-        |> List.map (viewShape << Tuple.second)
+        |> List.map Tuple.second
 
 
-viewShape : Shape -> Svg Msg
-viewShape shape =
+viewShape : Int -> Shape -> Svg Msg
+viewShape shapeId shape =
     case shape of
         Rect rectModel ->
-            viewRect rectModel
+            viewRect shapeId rectModel
 
         Circle circleModel ->
-            viewCircle circleModel
+            viewCircle shapeId circleModel
 
 
-viewRect : RectModel -> Svg Msg
-viewRect rectModel =
+viewRect : Int -> RectModel -> Svg Msg
+viewRect shapeId rectModel =
     rect
-        [ x rectModel.x
-        , y rectModel.y
-        , width rectModel.width
-        , height rectModel.height
+        [ x (toString rectModel.x)
+        , y (toString rectModel.y)
+        , width (toString rectModel.width)
+        , height (toString rectModel.height)
         , stroke rectModel.stroke
         , fill rectModel.fill
+        , onClick <| ModifyShape shapeId <| IncreaseWidth 5.0
         ]
         []
 
 
-viewCircle : CircleModel -> Svg Msg
-viewCircle circleModel =
+viewCircle : Int -> CircleModel -> Svg Msg
+viewCircle shapeId circleModel =
     circle
-        [ cx circleModel.cx
-        , cy circleModel.cy
-        , r circleModel.r
+        [ cx (toString circleModel.cx)
+        , cy (toString circleModel.cy)
+        , r (toString circleModel.r)
         , stroke circleModel.stroke
         , fill circleModel.fill
+        , onClick <| ModifyShape shapeId <| IncreaseWidth 5.0
         ]
         []
 
