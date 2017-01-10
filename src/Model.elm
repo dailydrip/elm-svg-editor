@@ -1,4 +1,12 @@
-module Model exposing (Model, MouseModel, initialModel)
+module Model
+    exposing
+        ( Model
+        , MouseModel
+        , RectModel
+        , CircleModel
+        , Shape(..)
+        , initialModel
+        )
 
 import Mouse
 
@@ -11,6 +19,30 @@ type alias Model =
 type alias MouseModel =
     { position : Mouse.Position
     , down : Bool
+    }
+
+
+type Shape
+    = Rect RectModel
+    | Circle CircleModel
+
+
+type alias RectModel =
+    { x : String
+    , y : String
+    , width : String
+    , height : String
+    , stroke : String
+    , fill : String
+    }
+
+
+type alias CircleModel =
+    { cx : String
+    , cy : String
+    , r : String
+    , stroke : String
+    , fill : String
     }
 
 
