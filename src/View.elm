@@ -20,6 +20,21 @@ import Html.Attributes exposing (class, href)
 import Pure
 import Model exposing (Model, MouseModel)
 import Msg exposing (Msg)
+import Svg exposing (Svg, svg, rect, circle)
+import Svg.Attributes as SA
+    exposing
+        ( viewBox
+        , preserveAspectRatio
+        , x
+        , y
+        , width
+        , height
+        , stroke
+        , fill
+        , r
+        , cx
+        , cy
+        )
 
 
 view : Model -> Html Msg
@@ -45,7 +60,29 @@ drawingArea : Html Msg
 drawingArea =
     section
         [ class <| "drawing-area " ++ Pure.unit [ "7", "8" ] ]
-        []
+        [ svg
+            [ viewBox "0 0 100 100"
+            , preserveAspectRatio "xMidYMin slice"
+            ]
+            [ rect
+                [ x "20"
+                , y "20"
+                , width "20"
+                , height "20"
+                , stroke "black"
+                , fill "transparent"
+                ]
+                []
+            , circle
+                [ cx "50"
+                , cy "20"
+                , r "5"
+                , stroke "red"
+                , fill "yellow"
+                ]
+                []
+            ]
+        ]
 
 
 sidebar : MouseModel -> Html Msg

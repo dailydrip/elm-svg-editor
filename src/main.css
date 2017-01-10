@@ -112,3 +112,13 @@ header p a {
   background-color: var(--light-primary-color);
   height: 95vh;
 }
+
+/* Scale the SVG to fit the width and height of its parent, as outlined here:
+ * https://css-tricks.com/scale-svg/
+ */
+.drawing-area svg {
+  width: 100%;
+  padding-bottom: 92%;
+  height: 1px;
+  overflow: hidden;
+}
