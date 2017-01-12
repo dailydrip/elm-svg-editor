@@ -9,6 +9,7 @@ type Msg
     | MouseDown Mouse.Position
     | MouseUp Mouse.Position
     | ModifyShape Int ModifyShapeMsg
+    | SelectShape Int
 
 
 type ModifyShapeMsg

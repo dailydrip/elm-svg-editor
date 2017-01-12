@@ -51,6 +51,12 @@ update msg ({ mouse } as model) =
             }
                 ! []
 
+        SelectShape shapeId ->
+            { model
+                | selectedShapeId = Just shapeId
+            }
+                ! []
+
 
 findAndModifyShape : Int -> ModifyShapeMsg -> Dict Int Shape -> Dict Int Shape
 findAndModifyShape shapeId shapeMsg shapes =

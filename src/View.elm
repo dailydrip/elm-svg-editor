@@ -26,7 +26,7 @@ import Model
         , CircleModel
         , Shape(..)
         )
-import Msg exposing (Msg(ModifyShape), ModifyShapeMsg(..))
+import Msg exposing (Msg(SelectShape))
 import Svg exposing (Svg, svg, rect, circle)
 import Svg.Attributes as SA
     exposing
@@ -104,7 +104,7 @@ viewRect shapeId rectModel =
         , height (toString rectModel.height)
         , stroke rectModel.stroke
         , fill rectModel.fill
-        , onClick <| ModifyShape shapeId <| IncreaseWidth 5.0
+        , onClick <| SelectShape shapeId
         ]
         []
 
@@ -117,7 +117,7 @@ viewCircle shapeId circleModel =
         , r (toString circleModel.r)
         , stroke circleModel.stroke
         , fill circleModel.fill
-        , onClick <| ModifyShape shapeId <| IncreaseWidth 5.0
+        , onClick <| SelectShape shapeId
         ]
         []
 

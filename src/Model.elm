@@ -15,6 +15,7 @@ import Dict exposing (Dict)
 type alias Model =
     { mouse : MouseModel
     , shapes : Dict Int Shape
+    , selectedShapeId : Maybe Int
     }
 
 
@@ -53,6 +54,7 @@ initialModel =
     Model
         (MouseModel { x = 0, y = 0 } False)
         initialShapes
+        Nothing
 
 
 initialShapes : Dict Int Shape
