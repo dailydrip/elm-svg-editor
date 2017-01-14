@@ -20,6 +20,7 @@ import Html
         , li
         )
 import Html.Attributes exposing (class, href, classList)
+import Html.Events exposing (onWithOptions)
 import Pure
 import Model
     exposing
@@ -184,7 +185,7 @@ viewUnselectedRect shapeId rectModel =
         , stroke rectModel.stroke
         , strokeWidth (toString rectModel.strokeWidth)
         , fill rectModel.fill
-        , onClick <| SelectShape shapeId
+        , onClickPreventingDefault <| SelectShape shapeId
         ]
         []
 
@@ -224,7 +225,7 @@ viewUnselectedCircle shapeId circleModel =
         , stroke circleModel.stroke
         , strokeWidth (toString circleModel.strokeWidth)
         , fill circleModel.fill
-        , onClick <| SelectShape shapeId
+        , onClickPreventingDefault <| SelectShape shapeId
         ]
         []
 
@@ -271,3 +272,13 @@ sidebar mouse selectedTool =
             , dd [] [ text <| toString mouse.down ]
             ]
         ]
+
+
+onClickPreventingDefault : Msg -> Svg.Attribute Msg
+onClickPreventingDefault msg =
+    onWithOptions
+        "click"
+        { preventDefault = False
+        , stopPropagation = True
+        }
+        (Decode.succeed <| msg)
