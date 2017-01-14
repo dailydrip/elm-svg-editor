@@ -4,6 +4,7 @@ import Model
     exposing
         ( Model
         , Shape(..)
+        , Tool(..)
         , initialModel
         , RectModel
         , CircleModel
@@ -11,6 +12,7 @@ import Model
 import Msg exposing (Msg(..), ModifyShapeMsg(..))
 import Mouse
 import Dict exposing (Dict)
+import Ports
 
 
 init : () -> ( Model, Cmd Msg )
@@ -45,6 +47,13 @@ update msg ({ mouse } as model) =
             in
                 { model | mouse = nextMouse } ! []
 
+        MouseSvgMove pos ->
+            let
+                nextMouse =
+                    { mouse | svgPosition = pos }
+            in
+                { model | mouse = nextMouse } ! []
+
         ModifyShape shapeId shapeMsg ->
             { model
                 | shapes = findAndModifyShape shapeId shapeMsg model.shapes
@@ -57,6 +66,14 @@ update msg ({ mouse } as model) =
             }
                 ! []
 
+        AddShape shape ->
+            ( model |> addShape shape
+            , Cmd.none
+            )
+
+        SelectTool tool ->
+            { model | selectedTool = Just tool } ! []
+
 
 findAndModifyShape : Int -> ModifyShapeMsg -> Dict Int Shape -> Dict Int Shape
 findAndModifyShape shapeId shapeMsg shapes =
@@ -67,6 +84,28 @@ findAndModifyShape shapeId shapeMsg shapes =
         Just shape ->
             shapes
                 |> Dict.insert shapeId (updateShape shapeMsg shape)
+
+
+addShape : Shape -> Model -> Model
+addShape shape model =
+    let
+        shapes : Dict Int Shape
+        shapes =
+            model.shapes
+
+        maxId : Int
+        maxId =
+            shapes
+                |> Dict.keys
+                |> List.maximum
+                |> Maybe.withDefault 0
+
+        nextShapes : Dict Int Shape
+        nextShapes =
+            model.shapes
+                |> Dict.insert (maxId + 1) shape
+    in
+        { model | shapes = nextShapes }
 
 
 updateShape : ModifyShapeMsg -> Shape -> Shape
@@ -103,4 +142,5 @@ subscriptions model =
         [ Mouse.moves MouseMove
         , Mouse.downs MouseDown
         , Mouse.ups MouseUp
+        , Ports.receiveSvgMouseCoordinates MouseSvgMove
         ]

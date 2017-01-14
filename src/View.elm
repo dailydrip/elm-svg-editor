@@ -15,8 +15,11 @@ import Html
         , p
         , section
         , text
+        , i
+        , ul
+        , li
         )
-import Html.Attributes exposing (class, href)
+import Html.Attributes exposing (class, href, classList)
 import Pure
 import Model
     exposing
@@ -25,8 +28,9 @@ import Model
         , RectModel
         , CircleModel
         , Shape(..)
+        , Tool(..)
         )
-import Msg exposing (Msg(SelectShape))
+import Msg exposing (Msg(SelectShape, AddShape, SelectTool, NoOp))
 import Svg exposing (Svg, svg, rect, circle, g)
 import Svg.Attributes as SA
     exposing
@@ -44,8 +48,10 @@ import Svg.Attributes as SA
         , cx
         , cy
         )
-import Svg.Events exposing (onClick)
+import Svg.Events exposing (onClick, on)
 import Dict exposing (Dict)
+import FontAwesome.Web as Icon
+import Json.Decode as Decode
 
 
 view : Model -> Html Msg
@@ -61,22 +67,57 @@ view model =
             ]
         , div
             [ class Pure.grid ]
-            [ sidebar model.mouse
-            , drawingArea model.selectedShapeId model.shapes
+            [ sidebar model.mouse model.selectedTool
+            , drawingArea model.selectedShapeId model.shapes model.selectedTool model.mouse
             ]
         ]
 
 
-drawingArea : Maybe Int -> Dict Int Shape -> Html Msg
-drawingArea maybeSelectedShapeId shapesDict =
+drawingArea : Maybe Int -> Dict Int Shape -> Maybe Tool -> MouseModel -> Html Msg
+drawingArea maybeSelectedShapeId shapesDict maybeSelectedTool mouse =
     section
         [ class <| "drawing-area " ++ Pure.unit [ "7", "8" ] ]
         [ svg
             [ viewBox "0 0 1000 1000"
             , preserveAspectRatio "xMidYMin slice"
+            , onClick (onDrawingAreaClick maybeSelectedTool mouse)
             ]
             (viewShapes maybeSelectedShapeId shapesDict)
         ]
+
+
+onDrawingAreaClick : Maybe Tool -> MouseModel -> Msg
+onDrawingAreaClick maybeTool mouse =
+    case maybeTool of
+        Nothing ->
+            NoOp
+
+        Just tool ->
+            case tool of
+                RectTool ->
+                    AddShape <|
+                        (Rect
+                            { x = mouse.svgPosition.x
+                            , y = mouse.svgPosition.y
+                            , width = 100
+                            , height = 100
+                            , stroke = "green"
+                            , strokeWidth = 10
+                            , fill = "transparent"
+                            }
+                        )
+
+                CircleTool ->
+                    AddShape <|
+                        (Circle
+                            { cx = mouse.svgPosition.x
+                            , cy = mouse.svgPosition.y
+                            , r = 25
+                            , stroke = "yellow"
+                            , strokeWidth = 10
+                            , fill = "red"
+                            }
+                        )
 
 
 viewShapes : Maybe Int -> Dict Int Shape -> List (Svg Msg)
@@ -188,14 +229,44 @@ viewUnselectedCircle shapeId circleModel =
         []
 
 
-sidebar : MouseModel -> Html Msg
-sidebar mouse =
+sidebar : MouseModel -> Maybe Tool -> Html Msg
+sidebar mouse selectedTool =
     section
         [ class <| "sidebar " ++ Pure.unit [ "1", "8" ] ]
-        [ h3 [] [ text "Mouse" ]
+        [ div
+            [ class "tools" ]
+            [ h3 [] [ text "Tools" ]
+            , ul []
+                [ li
+                    [ onClick <| SelectTool RectTool
+                    , classList
+                        [ ( "selected"
+                          , selectedTool
+                                == Just
+                                    RectTool
+                          )
+                        ]
+                    ]
+                    [ Icon.square_o ]
+                , li
+                    [ onClick <| SelectTool CircleTool
+                    , classList
+                        [ ( "selected"
+                          , selectedTool
+                                == Just
+                                    CircleTool
+                          )
+                        ]
+                    ]
+                    [ Icon.circle_o ]
+                ]
+            ]
+        , h3 [] [ text "Mouse" ]
         , dl []
             [ dt [] [ text "Position" ]
             , dd [] [ text <| toString mouse.position ]
+            , dt [] [ text "SVG Position" ]
+            , dd [] [ text <| toString mouse.svgPosition ]
             , dt [] [ text "Down?" ]
             , dd [] [ text <| toString mouse.down ]
             ]
