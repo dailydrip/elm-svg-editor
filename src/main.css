@@ -129,3 +129,8 @@ header p a {
   background-color: var(--light-primary-color);
   height: 95vh;
 }
+
+.rect-selection-drag-handle,
+.circle-selection-drag-handle {
+  cursor: pointer;
+}

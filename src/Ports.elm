@@ -1,6 +1,6 @@
 port module Ports exposing (receiveSvgMouseCoordinates)
 
-import Model exposing (SvgPosition)
+import SvgPosition exposing (SvgPosition)
 
 
 -- INBOUND PORTS

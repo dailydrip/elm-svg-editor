@@ -6,12 +6,13 @@ module Model
         , CircleModel
         , Shape(..)
         , Tool(..)
-        , SvgPosition
         , initialModel
         )
 
 import Mouse
 import Dict exposing (Dict)
+import SvgPosition exposing (SvgPosition)
+import Drag exposing (DragAction)
 
 
 type alias Model =
@@ -19,6 +20,8 @@ type alias Model =
     , shapes : Dict Int Shape
     , selectedShapeId : Maybe Int
     , selectedTool : Maybe Tool
+    , dragAction : Maybe DragAction
+    , comparedShape : Maybe Shape
     }
 
 
@@ -26,12 +29,7 @@ type alias MouseModel =
     { position : Mouse.Position
     , down : Bool
     , svgPosition : SvgPosition
-    }
-
-
-type alias SvgPosition =
-    { x : Float
-    , y : Float
+    , downSvgPosition : SvgPosition
     }
 
 
@@ -68,11 +66,22 @@ type Tool
 
 initialModel : Model
 initialModel =
-    Model
-        (MouseModel { x = 0, y = 0 } False { x = 0, y = 0 })
-        initialShapes
-        Nothing
-        Nothing
+    { mouse = initialMouse
+    , shapes = initialShapes
+    , selectedShapeId = Nothing
+    , selectedTool = Nothing
+    , dragAction = Nothing
+    , comparedShape = Nothing
+    }
+
+
+initialMouse : MouseModel
+initialMouse =
+    { position = { x = 0, y = 0 }
+    , down = False
+    , svgPosition = { x = 0, y = 0 }
+    , downSvgPosition = { x = 0, y = 0 }
+    }
 
 
 initialShapes : Dict Int Shape

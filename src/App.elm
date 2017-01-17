@@ -10,9 +10,11 @@ import Model
         , CircleModel
         )
 import Msg exposing (Msg(..), ModifyShapeMsg(..))
+import Drag exposing (DragAction(..))
 import Mouse
 import Dict exposing (Dict)
 import Ports
+import SvgPosition exposing (SvgPosition)
 
 
 init : () -> ( Model, Cmd Msg )
@@ -36,7 +38,7 @@ update msg ({ mouse } as model) =
         MouseDown pos ->
             let
                 nextMouse =
-                    { mouse | down = True }
+                    { mouse | down = True, downSvgPosition = mouse.svgPosition }
             in
                 { model | mouse = nextMouse } ! []
 
@@ -45,14 +47,17 @@ update msg ({ mouse } as model) =
                 nextMouse =
                     { mouse | down = False }
             in
-                { model | mouse = nextMouse } ! []
+                { model | mouse = nextMouse, dragAction = Nothing } ! []
 
         MouseSvgMove pos ->
             let
                 nextMouse =
                     { mouse | svgPosition = pos }
+
+                nextModel =
+                    handleDrag pos model
             in
-                { model | mouse = nextMouse } ! []
+                { nextModel | mouse = nextMouse } ! []
 
         ModifyShape shapeId shapeMsg ->
             { model
@@ -73,6 +78,110 @@ update msg ({ mouse } as model) =
 
         SelectTool tool ->
             { model | selectedTool = Just tool } ! []
+
+        BeginDrag dragAction ->
+            let
+                comparedShape =
+                    case model.selectedShapeId of
+                        Nothing ->
+                            Nothing
+
+                        Just shapeId ->
+                            Dict.get shapeId model.shapes
+            in
+                { model
+                    | dragAction = Just dragAction
+                    , comparedShape = comparedShape
+                }
+                    ! []
+
+
+handleDrag : SvgPosition -> Model -> Model
+handleDrag pos model =
+    case model.dragAction of
+        Nothing ->
+            model
+
+        Just dragAction ->
+            case model.selectedShapeId of
+                Nothing ->
+                    model
+
+                Just shapeId ->
+                    case Dict.get shapeId model.shapes of
+                        Nothing ->
+                            model
+
+                        Just shape ->
+                            handleDragAction dragAction shapeId shape pos model
+
+
+handleDragAction : DragAction -> Int -> Shape -> SvgPosition -> Model -> Model
+handleDragAction dragAction shapeId shape pos model =
+    let
+        maybeNewShape : Maybe Shape
+        maybeNewShape =
+            case dragAction of
+                DragResize ->
+                    case ( shape, model.comparedShape ) of
+                        ( Rect rectModel, Just (Rect compRect) ) ->
+                            let
+                                ( newX, newWidth ) =
+                                    if pos.x <= compRect.x then
+                                        ( pos.x, compRect.x - pos.x )
+                                    else
+                                        ( compRect.x, pos.x - compRect.x )
+
+                                ( newY, newHeight ) =
+                                    if pos.y <= compRect.y then
+                                        ( pos.y, compRect.y - pos.y )
+                                    else
+                                        ( compRect.y, pos.y - compRect.y )
+                            in
+                                Just <|
+                                    Rect
+                                        { rectModel
+                                            | height = newHeight
+                                            , width = newWidth
+                                            , x = newX
+                                            , y = newY
+                                        }
+
+                        ( Circle circleModel, Just (Circle compCircle) ) ->
+                            let
+                                newR =
+                                    max
+                                        (abs
+                                            (pos.x
+                                                - circleModel.cx
+                                            )
+                                        )
+                                        (abs
+                                            (pos.y
+                                                - circleModel.cy
+                                            )
+                                        )
+                            in
+                                Just <|
+                                    Circle
+                                        { circleModel
+                                            | r = newR
+                                        }
+
+                        _ ->
+                            Nothing
+    in
+        case maybeNewShape of
+            Just newShape ->
+                { model
+                    | shapes =
+                        Dict.insert shapeId
+                            newShape
+                            model.shapes
+                }
+
+            Nothing ->
+                model
 
 
 findAndModifyShape : Int -> ModifyShapeMsg -> Dict Int Shape -> Dict Int Shape

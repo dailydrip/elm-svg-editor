@@ -31,7 +31,7 @@ import Model
         , Shape(..)
         , Tool(..)
         )
-import Msg exposing (Msg(SelectShape, AddShape, SelectTool, NoOp))
+import Msg exposing (Msg(SelectShape, AddShape, SelectTool, NoOp, BeginDrag))
 import Svg exposing (Svg, svg, rect, circle, g)
 import Svg.Attributes as SA
     exposing
@@ -49,10 +49,11 @@ import Svg.Attributes as SA
         , cx
         , cy
         )
-import Svg.Events exposing (onClick, on)
+import Svg.Events exposing (onClick, on, onMouseDown)
 import Dict exposing (Dict)
 import FontAwesome.Web as Icon
 import Json.Decode as Decode
+import Drag exposing (DragAction(..))
 
 
 view : Model -> Html Msg
@@ -151,6 +152,30 @@ viewShape maybeSelectedShapeId shapeId shape =
 viewRect : Bool -> Int -> RectModel -> Svg Msg
 viewRect selected shapeId rectModel =
     let
+        dragHandleWidth =
+            20
+
+        dragHandle =
+            rect
+                [ x
+                    (toString
+                        (rectModel.x + rectModel.width)
+                    )
+                , y
+                    (toString
+                        (rectModel.y + rectModel.height)
+                    )
+                , width (toString dragHandleWidth)
+                , height (toString dragHandleWidth)
+                , stroke "yellow"
+                , strokeWidth "2"
+                , strokeDasharray "4,4"
+                , fill "transparent"
+                , SA.class "rect-selection-drag-handle"
+                , onMouseDownPreventingDefault <| BeginDrag DragResize
+                ]
+                []
+
         rectSelection =
             rect
                 [ x (toString (rectModel.x - (rectModel.strokeWidth / 2)))
@@ -161,6 +186,7 @@ viewRect selected shapeId rectModel =
                 , strokeWidth "2"
                 , strokeDasharray "4,4"
                 , fill "transparent"
+                , SA.class "selection rect-selection"
                 ]
                 []
 
@@ -168,11 +194,15 @@ viewRect selected shapeId rectModel =
             if selected then
                 [ viewUnselectedRect shapeId rectModel
                 , rectSelection
+                , dragHandle
                 ]
             else
                 [ viewUnselectedRect shapeId rectModel ]
     in
-        g [] groupChildren
+        g
+            [ onClickPreventingDefault <| SelectShape shapeId
+            ]
+            groupChildren
 
 
 viewUnselectedRect : Int -> RectModel -> Svg Msg
@@ -185,7 +215,6 @@ viewUnselectedRect shapeId rectModel =
         , stroke rectModel.stroke
         , strokeWidth (toString rectModel.strokeWidth)
         , fill rectModel.fill
-        , onClickPreventingDefault <| SelectShape shapeId
         ]
         []
 
@@ -193,6 +222,28 @@ viewUnselectedRect shapeId rectModel =
 viewCircle : Bool -> Int -> CircleModel -> Svg Msg
 viewCircle selected shapeId circleModel =
     let
+        dragHandleWidth =
+            20
+
+        dragHandle =
+            rect
+                [ x
+                    (toString
+                        (circleModel.cx + circleModel.r)
+                    )
+                , y
+                    (toString circleModel.cy)
+                , width (toString dragHandleWidth)
+                , height (toString dragHandleWidth)
+                , stroke "yellow"
+                , strokeWidth "2"
+                , strokeDasharray "4,4"
+                , fill "transparent"
+                , SA.class "circle-selection-drag-handle"
+                , onMouseDownPreventingDefault <| BeginDrag DragResize
+                ]
+                []
+
         circleSelection =
             circle
                 [ cx (toString circleModel.cx)
@@ -209,6 +260,7 @@ viewCircle selected shapeId circleModel =
             if selected then
                 [ viewUnselectedCircle shapeId circleModel
                 , circleSelection
+                , dragHandle
                 ]
             else
                 [ viewUnselectedCircle shapeId circleModel ]
@@ -278,6 +330,16 @@ onClickPreventingDefault : Msg -> Svg.Attribute Msg
 onClickPreventingDefault msg =
     onWithOptions
         "click"
+        { preventDefault = False
+        , stopPropagation = True
+        }
+        (Decode.succeed <| msg)
+
+
+onMouseDownPreventingDefault : Msg -> Svg.Attribute Msg
+onMouseDownPreventingDefault msg =
+    onWithOptions
+        "mousedown"
         { preventDefault = False
         , stopPropagation = True
         }

@@ -1,7 +1,13 @@
 module Msg exposing (Msg(..), ModifyShapeMsg(..))
 
-import Model exposing (Shape(..), Tool(..), SvgPosition)
+import Model
+    exposing
+        ( Shape(..)
+        , Tool(..)
+        )
 import Mouse
+import Drag exposing (DragAction)
+import SvgPosition exposing (SvgPosition)
 
 
 type Msg
@@ -14,6 +20,7 @@ type Msg
     | SelectShape Int
     | AddShape Shape
     | SelectTool Tool
+    | BeginDrag DragAction
 
 
 type ModifyShapeMsg
