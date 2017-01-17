@@ -15,8 +15,12 @@ import Html
         , p
         , section
         , text
+        , i
+        , ul
+        , li
         )
-import Html.Attributes exposing (class, href)
+import FontAwesome.Web as Icon
+import Html.Attributes exposing (class, href, classList)
 import Pure
 import Model
     exposing
@@ -25,8 +29,9 @@ import Model
         , RectModel
         , CircleModel
         , Shape(..)
+        , Tool(..)
         )
-import Msg exposing (Msg(SelectShape))
+import Msg exposing (Msg(SelectShape, AddShape, SelectTool, NoOp))
 import Svg exposing (Svg, svg, rect, circle, g)
 import Svg.Attributes as SA
     exposing
@@ -61,19 +66,20 @@ view model =
             ]
         , div
             [ class Pure.grid ]
-            [ sidebar model.mouse
-            , drawingArea model.selectedShapeId model.shapes
+            [ sidebar model.mouse model.selectedTool
+            , drawingArea model.selectedShapeId model.shapes model.selectedTool model.mouse
             ]
         ]
 
 
-drawingArea : Maybe Int -> Dict Int Shape -> Html Msg
-drawingArea maybeSelectedShapeId shapesDict =
+drawingArea : Maybe Int -> Dict Int Shape -> Tool -> MouseModel -> Html Msg
+drawingArea maybeSelectedShapeId shapesDict selectedTool mouse =
     section
         [ class <| "drawing-area " ++ Pure.unit [ "7", "8" ] ]
         [ svg
             [ viewBox "0 0 1000 1000"
             , preserveAspectRatio "xMidYMin slice"
+            , onClick (onDrawingAreaClick selectedTool mouse)
             ]
             (viewShapes maybeSelectedShapeId shapesDict)
         ]
@@ -188,15 +194,82 @@ viewUnselectedCircle shapeId circleModel =
         []
 
 
-sidebar : MouseModel -> Html Msg
-sidebar mouse =
+sidebar : MouseModel -> Tool -> Html Msg
+sidebar mouse selectedTool =
     section
         [ class <| "sidebar " ++ Pure.unit [ "1", "8" ] ]
-        [ h3 [] [ text "Mouse" ]
+        [ div
+            [ class "tools" ]
+            [ h3 [] [ text "Tools" ]
+            , ul []
+                [ li
+                    [ onClick <| SelectTool PointerTool
+                    , classList
+                        [ ( "selected"
+                          , selectedTool == PointerTool
+                          )
+                        ]
+                    ]
+                    [ Icon.mouse_pointer ]
+                , li
+                    [ onClick <| SelectTool RectTool
+                    , classList
+                        [ ( "selected"
+                          , selectedTool == RectTool
+                          )
+                        ]
+                    ]
+                    [ Icon.square_o ]
+                , li
+                    [ onClick <| SelectTool CircleTool
+                    , classList
+                        [ ( "selected"
+                          , selectedTool == CircleTool
+                          )
+                        ]
+                    ]
+                    [ Icon.circle_o ]
+                ]
+            ]
+        , h3 [] [ text "Mouse" ]
         , dl []
             [ dt [] [ text "Position" ]
             , dd [] [ text <| toString mouse.position ]
             , dt [] [ text "Down?" ]
             , dd [] [ text <| toString mouse.down ]
+            , dt [] [ text "SVG Position" ]
+            , dd [] [ text <| toString mouse.svgPosition ]
             ]
         ]
+
+
+onDrawingAreaClick : Tool -> MouseModel -> Msg
+onDrawingAreaClick tool mouse =
+    case tool of
+        PointerTool ->
+            NoOp
+
+        RectTool ->
+            AddShape <|
+                (Rect
+                    { x = mouse.svgPosition.x
+                    , y = mouse.svgPosition.y
+                    , width = 100
+                    , height = 100
+                    , stroke = "green"
+                    , strokeWidth = 10
+                    , fill = "transparent"
+                    }
+                )
+
+        CircleTool ->
+            AddShape <|
+                (Circle
+                    { cx = mouse.svgPosition.x
+                    , cy = mouse.svgPosition.y
+                    , r = 25
+                    , stroke = "yellow"
+                    , strokeWidth = 10
+                    , fill = "red"
+                    }
+                )

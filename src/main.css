@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css?family=Noto+Sans:400,400i,700,700i');
+@import '../node_modules/font-awesome/css/font-awesome.css';
 
 :root {
   --dark-primary-color: #388e3c;
@@ -10,6 +11,8 @@
   --secondary-text-color: #757575;
   --divider-color: #bdbdbd;
   --sidebar-heading-background-color: color(var(--default-primary-color) shade(10%));
+  --tools-hover-background-color: color(white a(10%));
+  --tools-selected-background-color: color(white a(20%));
 }
 
 html {
@@ -90,7 +93,7 @@ header p a {
   background: var(--sidebar-heading-background-color);
   padding: 0.5rem;
   font-size: 85%;
-  margin-bottom: 0.5rem;
+  margin: 0;
 }
 
 .sidebar dl {
@@ -111,4 +114,22 @@ header p a {
 .drawing-area {
   background-color: var(--light-primary-color);
   height: 95vh;
+}
+
+.sidebar .tools ul {
+  margin: 0;
+  padding: .25rem;
+  list-style-type: none;
+}
+.sidebar .tools ul li {
+  padding: .25rem;
+  display: inline-block;
+  margin-right: .25rem;
+  cursor: pointer;
+}
+.sidebar .tools ul li:hover {
+  background: var(--tools-hover-background-color);
+}
+.sidebar .tools ul li.selected {
+  background: var(--tools-selected-background-color);
 }

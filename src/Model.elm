@@ -4,7 +4,9 @@ module Model
         , MouseModel
         , RectModel
         , CircleModel
+        , SvgPosition
         , Shape(..)
+        , Tool(..)
         , initialModel
         )
 
@@ -16,12 +18,26 @@ type alias Model =
     { mouse : MouseModel
     , shapes : Dict Int Shape
     , selectedShapeId : Maybe Int
+    , selectedTool : Tool
     }
+
+
+type Tool
+    = PointerTool
+    | RectTool
+    | CircleTool
 
 
 type alias MouseModel =
     { position : Mouse.Position
     , down : Bool
+    , svgPosition : SvgPosition
+    }
+
+
+type alias SvgPosition =
+    { x : Float
+    , y : Float
     }
 
 
@@ -54,9 +70,10 @@ type alias CircleModel =
 initialModel : Model
 initialModel =
     Model
-        (MouseModel { x = 0, y = 0 } False)
+        (MouseModel { x = 0, y = 0 } False { x = 0, y = 0 })
         initialShapes
         Nothing
+        PointerTool
 
 
 initialShapes : Dict Int Shape
