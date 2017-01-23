@@ -31,7 +31,17 @@ import Model
         , Shape(..)
         , Tool(..)
         )
-import Msg exposing (Msg(SelectShape, AddShape, SelectTool, NoOp))
+import Msg
+    exposing
+        ( Msg
+            ( SelectShape
+            , AddShape
+            , SelectTool
+            , NoOp
+            , BeginDrag
+            , EndDrag
+            )
+        )
 import Svg exposing (Svg, svg, rect, circle, g)
 import Svg.Attributes as SA
     exposing
@@ -50,7 +60,10 @@ import Svg.Attributes as SA
         , cy
         )
 import Svg.Events exposing (onClick)
+import Html.Events exposing (onWithOptions)
 import Dict exposing (Dict)
+import Drag exposing (DragAction(..))
+import Json.Decode as Decode
 
 
 view : Model -> Html Msg
@@ -112,20 +125,29 @@ viewShape maybeSelectedShapeId shapeId shape =
                 viewCircle selected shapeId circleModel
 
 
+selectionAttributes : List (Svg.Attribute Msg)
+selectionAttributes =
+    [ stroke "yellow"
+    , strokeWidth "2"
+    , strokeDasharray "4,4"
+    , fill "transparent"
+    , SA.class "selection"
+    , onMouseDownPreventingDefault <| BeginDrag DragMove
+    ]
+
+
 viewRect : Bool -> Int -> RectModel -> Svg Msg
 viewRect selected shapeId rectModel =
     let
         rectSelection =
             rect
-                [ x (toString (rectModel.x - (rectModel.strokeWidth / 2)))
-                , y (toString (rectModel.y - (rectModel.strokeWidth / 2)))
-                , width (toString (rectModel.width + rectModel.strokeWidth))
-                , height (toString (rectModel.height + rectModel.strokeWidth))
-                , stroke "yellow"
-                , strokeWidth "2"
-                , strokeDasharray "4,4"
-                , fill "transparent"
-                ]
+                ([ x (toString (rectModel.x - (rectModel.strokeWidth / 2)))
+                 , y (toString (rectModel.y - (rectModel.strokeWidth / 2)))
+                 , width (toString (rectModel.width + rectModel.strokeWidth))
+                 , height (toString (rectModel.height + rectModel.strokeWidth))
+                 ]
+                    ++ selectionAttributes
+                )
                 []
 
         groupChildren =
@@ -159,14 +181,12 @@ viewCircle selected shapeId circleModel =
     let
         circleSelection =
             circle
-                [ cx (toString circleModel.cx)
-                , cy (toString circleModel.cy)
-                , r (toString (circleModel.r + (circleModel.strokeWidth / 2)))
-                , stroke "yellow"
-                , strokeWidth "2"
-                , strokeDasharray "4,4"
-                , fill "transparent"
-                ]
+                ([ cx (toString circleModel.cx)
+                 , cy (toString circleModel.cy)
+                 , r (toString (circleModel.r + (circleModel.strokeWidth / 2)))
+                 ]
+                    ++ selectionAttributes
+                )
                 []
 
         groupChildren =
@@ -273,3 +293,18 @@ onDrawingAreaClick tool mouse =
                     , fill = "red"
                     }
                 )
+
+
+onPreventingDefault : String -> Msg -> Svg.Attribute Msg
+onPreventingDefault event msg =
+    onWithOptions
+        event
+        { preventDefault = False
+        , stopPropagation = True
+        }
+        (Decode.succeed <| msg)
+
+
+onMouseDownPreventingDefault : Msg -> Svg.Attribute Msg
+onMouseDownPreventingDefault msg =
+    onPreventingDefault "mousedown" msg

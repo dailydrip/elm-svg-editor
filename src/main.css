@@ -133,3 +133,7 @@ header p a {
 .sidebar .tools ul li.selected {
   background: var(--tools-selected-background-color);
 }
+
+.selection {
+  cursor: pointer;
+}
