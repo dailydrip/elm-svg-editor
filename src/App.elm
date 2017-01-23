@@ -135,49 +135,38 @@ handleDrag pos model =
 handleDragAction : DragAction -> Int -> Shape -> SvgPosition -> Model -> Model
 handleDragAction dragAction shapeId shape pos ({ mouse } as model) =
     let
-        maybeNewShape : Maybe Shape
-        maybeNewShape =
-            case model.comparedShape of
-                Nothing ->
-                    Nothing
+        newShape : Shape
+        newShape =
+            case dragAction of
+                DragMove ->
+                    let
+                        dragDiffX =
+                            mouse.downSvgPosition.x - mouse.svgPosition.x
 
-                Just comparedShape ->
-                    Just <|
-                        case dragAction of
-                            DragMove ->
-                                let
-                                    dragDiffX =
-                                        mouse.downSvgPosition.x - mouse.svgPosition.x
+                        dragDiffY =
+                            mouse.downSvgPosition.y - mouse.svgPosition.y
+                    in
+                        case shape of
+                            Rect rectModel ->
+                                Rect
+                                    { rectModel
+                                        | x = rectModel.x - dragDiffX
+                                        , y = rectModel.y - dragDiffY
+                                    }
 
-                                    dragDiffY =
-                                        mouse.downSvgPosition.y - mouse.svgPosition.y
-                                in
-                                    case comparedShape of
-                                        Rect rectModel ->
-                                            Rect
-                                                { rectModel
-                                                    | x = rectModel.x - dragDiffX
-                                                    , y = rectModel.y - dragDiffY
-                                                }
-
-                                        Circle circleModel ->
-                                            Circle
-                                                { circleModel
-                                                    | cx = circleModel.cx - dragDiffX
-                                                    , cy = circleModel.cy - dragDiffY
-                                                }
+                            Circle circleModel ->
+                                Circle
+                                    { circleModel
+                                        | cx = circleModel.cx - dragDiffX
+                                        , cy = circleModel.cy - dragDiffY
+                                    }
     in
-        case maybeNewShape of
-            Nothing ->
-                model
-
-            Just newShape ->
-                { model
-                    | shapes =
-                        Dict.insert shapeId
-                            newShape
-                            model.shapes
-                }
+        { model
+            | shapes =
+                Dict.insert shapeId
+                    newShape
+                    model.shapes
+        }
 
 
 addShape : Shape -> Model -> Model
