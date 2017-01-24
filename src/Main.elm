@@ -5,6 +5,7 @@ import View exposing (view)
 import Html exposing (programWithFlags)
 import Model exposing (Model)
 import Msg exposing (Msg)
+import Update exposing (update)
 
 
 main : Program () Model Msg

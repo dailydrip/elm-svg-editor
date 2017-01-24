@@ -35,6 +35,7 @@ import Msg
     exposing
         ( Msg
             ( SelectShape
+            , DeselectShape
             , AddShape
             , SelectTool
             , NoOp
@@ -94,20 +95,20 @@ drawingArea maybeSelectedShapeId shapesDict selectedTool mouse =
             , preserveAspectRatio "xMidYMin slice"
             , onClick (onDrawingAreaClick selectedTool mouse)
             ]
-            (viewShapes maybeSelectedShapeId shapesDict)
+            (viewShapes selectedTool maybeSelectedShapeId shapesDict)
         ]
 
 
-viewShapes : Maybe Int -> Dict Int Shape -> List (Svg Msg)
-viewShapes maybeSelectedShapeId shapesDict =
+viewShapes : Tool -> Maybe Int -> Dict Int Shape -> List (Svg Msg)
+viewShapes selectedTool maybeSelectedShapeId shapesDict =
     shapesDict
-        |> Dict.map (viewShape maybeSelectedShapeId)
+        |> Dict.map (viewShape selectedTool maybeSelectedShapeId)
         |> Dict.toList
         |> List.map Tuple.second
 
 
-viewShape : Maybe Int -> Int -> Shape -> Svg Msg
-viewShape maybeSelectedShapeId shapeId shape =
+viewShape : Tool -> Maybe Int -> Int -> Shape -> Svg Msg
+viewShape selectedTool maybeSelectedShapeId shapeId shape =
     let
         selected =
             case maybeSelectedShapeId of
@@ -119,25 +120,36 @@ viewShape maybeSelectedShapeId shapeId shape =
     in
         case shape of
             Rect rectModel ->
-                viewRect selected shapeId rectModel
+                viewRect selectedTool selected shapeId rectModel
 
             Circle circleModel ->
-                viewCircle selected shapeId circleModel
+                viewCircle selectedTool selected shapeId circleModel
 
 
-selectionAttributes : List (Svg.Attribute Msg)
-selectionAttributes =
-    [ stroke "yellow"
-    , strokeWidth "2"
-    , strokeDasharray "4,4"
-    , fill "transparent"
-    , SA.class "selection"
-    , onMouseDownPreventingDefault <| BeginDrag DragMove
-    ]
+selectionAttributes : Tool -> List (Svg.Attribute Msg)
+selectionAttributes tool =
+    let
+        onSelectionClick : List (Svg.Attribute Msg)
+        onSelectionClick =
+            case tool of
+                PointerTool ->
+                    [ onClickPreventingDefault <| NoOp ]
+
+                _ ->
+                    []
+    in
+        [ stroke "yellow"
+        , strokeWidth "2"
+        , strokeDasharray "4,4"
+        , fill "transparent"
+        , SA.class "selection"
+        , onMouseDownPreventingDefault <| BeginDrag DragMove
+        ]
+            ++ onSelectionClick
 
 
-viewRect : Bool -> Int -> RectModel -> Svg Msg
-viewRect selected shapeId rectModel =
+viewRect : Tool -> Bool -> Int -> RectModel -> Svg Msg
+viewRect selectedTool selected shapeId rectModel =
     let
         rectSelection =
             rect
@@ -146,13 +158,13 @@ viewRect selected shapeId rectModel =
                  , width (toString (rectModel.width + rectModel.strokeWidth))
                  , height (toString (rectModel.height + rectModel.strokeWidth))
                  ]
-                    ++ selectionAttributes
+                    ++ (selectionAttributes selectedTool)
                 )
                 []
 
         groupChildren =
             if selected then
-                [ viewUnselectedRect shapeId rectModel
+                [ viewUnselectedRect selectedTool shapeId rectModel
                 , rectSelection
                 , dragHandle
                     ( rectModel.x + rectModel.width
@@ -160,28 +172,29 @@ viewRect selected shapeId rectModel =
                     )
                 ]
             else
-                [ viewUnselectedRect shapeId rectModel ]
+                [ viewUnselectedRect selectedTool shapeId rectModel ]
     in
         g [] groupChildren
 
 
-viewUnselectedRect : Int -> RectModel -> Svg Msg
-viewUnselectedRect shapeId rectModel =
+viewUnselectedRect : Tool -> Int -> RectModel -> Svg Msg
+viewUnselectedRect selectedTool shapeId rectModel =
     rect
-        [ x (toString rectModel.x)
-        , y (toString rectModel.y)
-        , width (toString rectModel.width)
-        , height (toString rectModel.height)
-        , stroke rectModel.stroke
-        , strokeWidth (toString rectModel.strokeWidth)
-        , fill rectModel.fill
-        , onClick <| SelectShape shapeId
-        ]
+        ([ x (toString rectModel.x)
+         , y (toString rectModel.y)
+         , width (toString rectModel.width)
+         , height (toString rectModel.height)
+         , stroke rectModel.stroke
+         , strokeWidth (toString rectModel.strokeWidth)
+         , fill rectModel.fill
+         ]
+            ++ (onShapeClick selectedTool shapeId)
+        )
         []
 
 
-viewCircle : Bool -> Int -> CircleModel -> Svg Msg
-viewCircle selected shapeId circleModel =
+viewCircle : Tool -> Bool -> Int -> CircleModel -> Svg Msg
+viewCircle selectedTool selected shapeId circleModel =
     let
         circleSelection =
             circle
@@ -189,13 +202,13 @@ viewCircle selected shapeId circleModel =
                  , cy (toString circleModel.cy)
                  , r (toString (circleModel.r + (circleModel.strokeWidth / 2)))
                  ]
-                    ++ selectionAttributes
+                    ++ (selectionAttributes selectedTool)
                 )
                 []
 
         groupChildren =
             if selected then
-                [ viewUnselectedCircle shapeId circleModel
+                [ viewUnselectedCircle selectedTool shapeId circleModel
                 , circleSelection
                 , dragHandle
                     ( circleModel.cx + circleModel.r
@@ -203,22 +216,33 @@ viewCircle selected shapeId circleModel =
                     )
                 ]
             else
-                [ viewUnselectedCircle shapeId circleModel ]
+                [ viewUnselectedCircle selectedTool shapeId circleModel ]
     in
         g [] groupChildren
 
 
-viewUnselectedCircle : Int -> CircleModel -> Svg Msg
-viewUnselectedCircle shapeId circleModel =
+onShapeClick : Tool -> Int -> List (Svg.Attribute Msg)
+onShapeClick selectedTool shapeId =
+    case selectedTool of
+        PointerTool ->
+            [ onClickPreventingDefault <| SelectShape shapeId ]
+
+        _ ->
+            []
+
+
+viewUnselectedCircle : Tool -> Int -> CircleModel -> Svg Msg
+viewUnselectedCircle selectedTool shapeId circleModel =
     circle
-        [ cx (toString circleModel.cx)
-        , cy (toString circleModel.cy)
-        , r (toString circleModel.r)
-        , stroke circleModel.stroke
-        , strokeWidth (toString circleModel.strokeWidth)
-        , fill circleModel.fill
-        , onClick <| SelectShape shapeId
-        ]
+        ([ cx (toString circleModel.cx)
+         , cy (toString circleModel.cy)
+         , r (toString circleModel.r)
+         , stroke circleModel.stroke
+         , strokeWidth (toString circleModel.strokeWidth)
+         , fill circleModel.fill
+         ]
+            ++ (onShapeClick selectedTool shapeId)
+        )
         []
 
 
@@ -275,7 +299,7 @@ onDrawingAreaClick : Tool -> MouseModel -> Msg
 onDrawingAreaClick tool mouse =
     case tool of
         PointerTool ->
-            NoOp
+            DeselectShape
 
         RectTool ->
             AddShape <|
@@ -318,6 +342,11 @@ onMouseDownPreventingDefault msg =
     onPreventingDefault "mousedown" msg
 
 
+onClickPreventingDefault : Msg -> Svg.Attribute Msg
+onClickPreventingDefault msg =
+    onPreventingDefault "click" msg
+
+
 dragHandleWidth : Int
 dragHandleWidth =
     20
@@ -336,5 +365,6 @@ dragHandle ( x_, y_ ) =
         , fill "transparent"
         , SA.class "selection-drag-handle"
         , onMouseDownPreventingDefault <| BeginDrag DragResize
+        , onClickPreventingDefault <| NoOp
         ]
         []

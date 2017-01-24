@@ -10,7 +10,7 @@ type Msg
     | MouseMove Mouse.Position
     | MouseDown Mouse.Position
     | MouseUp Mouse.Position
-    | ModifyShape Int ModifyShapeMsg
+    | DeselectShape
     | SelectShape Int
     | AddShape Shape
     | SelectTool Tool
