@@ -137,3 +137,7 @@ header p a {
 .selection {
   cursor: pointer;
 }
+
+.selection-drag-handle {
+  cursor: nwse-resize;
+}

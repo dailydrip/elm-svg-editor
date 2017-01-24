@@ -154,6 +154,10 @@ viewRect selected shapeId rectModel =
             if selected then
                 [ viewUnselectedRect shapeId rectModel
                 , rectSelection
+                , dragHandle
+                    ( rectModel.x + rectModel.width
+                    , rectModel.y + rectModel.height
+                    )
                 ]
             else
                 [ viewUnselectedRect shapeId rectModel ]
@@ -193,6 +197,10 @@ viewCircle selected shapeId circleModel =
             if selected then
                 [ viewUnselectedCircle shapeId circleModel
                 , circleSelection
+                , dragHandle
+                    ( circleModel.cx + circleModel.r
+                    , circleModel.cy
+                    )
                 ]
             else
                 [ viewUnselectedCircle shapeId circleModel ]
@@ -308,3 +316,25 @@ onPreventingDefault event msg =
 onMouseDownPreventingDefault : Msg -> Svg.Attribute Msg
 onMouseDownPreventingDefault msg =
     onPreventingDefault "mousedown" msg
+
+
+dragHandleWidth : Int
+dragHandleWidth =
+    20
+
+
+dragHandle : ( Float, Float ) -> Svg Msg
+dragHandle ( x_, y_ ) =
+    rect
+        [ x <| toString x_
+        , y <| toString y_
+        , width (toString dragHandleWidth)
+        , height (toString dragHandleWidth)
+        , stroke "yellow"
+        , strokeWidth "2"
+        , strokeDasharray "4,4"
+        , fill "transparent"
+        , SA.class "selection-drag-handle"
+        , onMouseDownPreventingDefault <| BeginDrag DragResize
+        ]
+        []
