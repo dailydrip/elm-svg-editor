@@ -116,22 +116,26 @@ header p a {
   height: 95vh;
 }
 
-.sidebar .tools ul {
+.sidebar ul.buttons {
   margin: 0;
   padding: .25rem;
   list-style-type: none;
 }
-.sidebar .tools ul li {
+.sidebar ul.buttons li {
   padding: .25rem;
   display: inline-block;
   margin-right: .25rem;
   cursor: pointer;
 }
-.sidebar .tools ul li:hover {
+.sidebar ul.buttons li:hover {
   background: var(--tools-hover-background-color);
 }
-.sidebar .tools ul li.selected {
+.sidebar ul.buttons li.selected {
   background: var(--tools-selected-background-color);
+}
+
+.sidebar ul.actions {
+  font-size: .75rem;
 }
 
 .selection {

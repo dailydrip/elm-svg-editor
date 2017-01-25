@@ -9,7 +9,7 @@ import Model
         , CircleModel
         , SvgPosition
         )
-import Msg exposing (Msg(..))
+import Msg exposing (Msg(..), ShapeAction(..))
 import Drag exposing (DragAction(..))
 import Dict exposing (Dict)
 
@@ -102,6 +102,14 @@ update msg ({ mouse } as model) =
                 , comparedShape = Nothing
             }
                 ! []
+
+        SelectedShapeAction shapeAction ->
+            handleShapeAction shapeAction model
+
+
+handleShapeAction : ShapeAction -> Model -> ( Model, Cmd Msg )
+handleShapeAction shapeAction ({ shapes, selectedShapeId } as model) =
+    model ! []
 
 
 handleDrag : SvgPosition -> Model -> Model
