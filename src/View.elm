@@ -83,13 +83,24 @@ view model =
         , div
             [ class Pure.grid ]
             [ sidebar model.selectedShapeId model.shapes model.mouse model.selectedTool
-            , drawingArea model.selectedShapeId model.shapes model.selectedTool model.mouse
+            , drawingArea
+                model.selectedShapeId
+                model.shapes
+                model.selectedTool
+                model.mouse
+                model.shapeOrdering
             ]
         ]
 
 
-drawingArea : Maybe Int -> Dict Int Shape -> Tool -> MouseModel -> Html Msg
-drawingArea maybeSelectedShapeId shapesDict selectedTool mouse =
+drawingArea :
+    Maybe Int
+    -> Dict Int Shape
+    -> Tool
+    -> MouseModel
+    -> Dict Int Int
+    -> Html Msg
+drawingArea maybeSelectedShapeId shapesDict selectedTool mouse shapeOrdering =
     section
         [ class <| "drawing-area " ++ Pure.unit [ "7", "8" ] ]
         [ svg
@@ -97,15 +108,24 @@ drawingArea maybeSelectedShapeId shapesDict selectedTool mouse =
             , preserveAspectRatio "xMidYMin slice"
             , onClick (onDrawingAreaClick selectedTool mouse)
             ]
-            (viewShapes selectedTool maybeSelectedShapeId shapesDict)
+            (viewShapes selectedTool
+                maybeSelectedShapeId
+                shapesDict
+                shapeOrdering
+            )
         ]
 
 
-viewShapes : Tool -> Maybe Int -> Dict Int Shape -> List (Svg Msg)
-viewShapes selectedTool maybeSelectedShapeId shapesDict =
+viewShapes : Tool -> Maybe Int -> Dict Int Shape -> Dict Int Int -> List (Svg Msg)
+viewShapes selectedTool maybeSelectedShapeId shapesDict shapeOrdering =
     shapesDict
         |> Dict.map (viewShape selectedTool maybeSelectedShapeId)
         |> Dict.toList
+        |> List.sortBy
+            (\( id, _ ) ->
+                Dict.get id shapeOrdering
+                    |> Maybe.withDefault 0
+            )
         |> List.map Tuple.second
 
 

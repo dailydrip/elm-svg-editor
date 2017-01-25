@@ -108,8 +108,96 @@ update msg ({ mouse } as model) =
 
 
 handleShapeAction : ShapeAction -> Model -> ( Model, Cmd Msg )
-handleShapeAction shapeAction ({ shapes, selectedShapeId } as model) =
-    model ! []
+handleShapeAction shapeAction ({ selectedShapeId, shapeOrdering } as model) =
+    case shapeAction of
+        SendToBack ->
+            { model
+                | shapeOrdering = sendShapeToBack selectedShapeId shapeOrdering
+            }
+                ! []
+
+        SendBackward ->
+            { model
+                | shapeOrdering = sendShapeBackward selectedShapeId shapeOrdering
+            }
+                ! []
+
+        BringForward ->
+            { model
+                | shapeOrdering = bringShapeForward selectedShapeId shapeOrdering
+            }
+                ! []
+
+        BringToFront ->
+            { model
+                | shapeOrdering = bringShapeToFront selectedShapeId shapeOrdering
+            }
+                ! []
+
+
+existingOrder : Int -> Dict Int Int -> Int
+existingOrder shapeId shapeOrdering =
+    shapeOrdering
+        |> Dict.get shapeId
+        |> Maybe.withDefault 0
+
+
+sendShapeBackward : Maybe Int -> Dict Int Int -> Dict Int Int
+sendShapeBackward maybeSelectedShapeId shapeOrdering =
+    case maybeSelectedShapeId of
+        Nothing ->
+            shapeOrdering
+
+        Just shapeId ->
+            Dict.insert shapeId ((existingOrder shapeId shapeOrdering) - 1) shapeOrdering
+
+
+bringShapeForward : Maybe Int -> Dict Int Int -> Dict Int Int
+bringShapeForward maybeSelectedShapeId shapeOrdering =
+    case maybeSelectedShapeId of
+        Nothing ->
+            shapeOrdering
+
+        Just shapeId ->
+            Dict.insert shapeId ((existingOrder shapeId shapeOrdering) + 1) shapeOrdering
+
+
+sendShapeToBack : Maybe Int -> Dict Int Int -> Dict Int Int
+sendShapeToBack maybeSelectedShapeId shapeOrdering =
+    case maybeSelectedShapeId of
+        Nothing ->
+            shapeOrdering
+
+        Just shapeId ->
+            let
+                lowestOrder : Int
+                lowestOrder =
+                    shapeOrdering
+                        |> Dict.remove shapeId
+                        |> Dict.values
+                        |> List.minimum
+                        |> Maybe.withDefault 0
+            in
+                Dict.insert shapeId (lowestOrder - 1) shapeOrdering
+
+
+bringShapeToFront : Maybe Int -> Dict Int Int -> Dict Int Int
+bringShapeToFront maybeSelectedShapeId shapeOrdering =
+    case maybeSelectedShapeId of
+        Nothing ->
+            shapeOrdering
+
+        Just shapeId ->
+            let
+                highestOrder : Int
+                highestOrder =
+                    shapeOrdering
+                        |> Dict.remove shapeId
+                        |> Dict.values
+                        |> List.maximum
+                        |> Maybe.withDefault 0
+            in
+                Dict.insert shapeId (highestOrder + 1) shapeOrdering
 
 
 handleDrag : SvgPosition -> Model -> Model
