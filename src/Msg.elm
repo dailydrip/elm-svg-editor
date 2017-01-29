@@ -1,4 +1,10 @@
-module Msg exposing (Msg(..), ModifyShapeMsg(..), ShapeAction(..))
+module Msg
+    exposing
+        ( Msg(..)
+        , ModifyShapeMsg(..)
+        , ShapeAction(..)
+        , TextAction(..)
+        )
 
 import Model exposing (Shape(..), Tool(..), SvgPosition)
 import Mouse
@@ -25,6 +31,11 @@ type ShapeAction
     | SendBackward
     | BringForward
     | BringToFront
+    | Text TextAction
+
+
+type TextAction
+    = SetContent String
 
 
 type ModifyShapeMsg

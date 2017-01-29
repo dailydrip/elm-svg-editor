@@ -4,6 +4,7 @@ module Model
         , MouseModel
         , RectModel
         , CircleModel
+        , TextModel
         , SvgPosition
         , Shape(..)
         , Tool(..)
@@ -30,6 +31,7 @@ type Tool
     = PointerTool
     | RectTool
     | CircleTool
+    | TextTool
 
 
 type alias MouseModel =
@@ -49,6 +51,7 @@ type alias SvgPosition =
 type Shape
     = Rect RectModel
     | Circle CircleModel
+    | Text TextModel
 
 
 type alias RectModel =
@@ -66,6 +69,18 @@ type alias CircleModel =
     { cx : Float
     , cy : Float
     , r : Float
+    , stroke : String
+    , strokeWidth : Float
+    , fill : String
+    }
+
+
+type alias TextModel =
+    { x : Float
+    , y : Float
+    , content : String
+    , fontFamily : String
+    , fontSize : Int
     , stroke : String
     , strokeWidth : Float
     , fill : String

@@ -85,6 +85,10 @@ header p a {
   color: var(--text-primary-color);
 }
 
+.sidebar input {
+  color: black;
+}
+
 .sidebar h3:first-child {
   margin-top: 0;
 }
