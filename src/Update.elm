@@ -7,9 +7,10 @@ import Model
         , Tool(..)
         , RectModel
         , CircleModel
+        , TextModel
         , SvgPosition
         )
-import Msg exposing (Msg(..), ShapeAction(..))
+import Msg exposing (Msg(..), ShapeAction(..), TextAction(..))
 import Drag exposing (DragAction(..))
 import Dict exposing (Dict)
 
@@ -134,6 +135,43 @@ handleShapeAction shapeAction ({ selectedShapeId, shapeOrdering } as model) =
             }
                 ! []
 
+        Msg.Text textAction ->
+            { model | shapes = updateTextShape textAction selectedShapeId model.shapes }
+                ! []
+
+
+updateTextShape : TextAction -> Maybe Int -> Dict Int Shape -> Dict Int Shape
+updateTextShape textAction maybeSelectedShapeId shapes =
+    case maybeSelectedShapeId of
+        Nothing ->
+            shapes
+
+        Just selectedShapeId ->
+            case Dict.get selectedShapeId shapes of
+                Nothing ->
+                    shapes
+
+                Just shape ->
+                    case shape of
+                        Model.Text textModel ->
+                            Dict.insert selectedShapeId
+                                (Model.Text <|
+                                    handleTextAction
+                                        textAction
+                                        textModel
+                                )
+                                shapes
+
+                        _ ->
+                            shapes
+
+
+handleTextAction : TextAction -> TextModel -> TextModel
+handleTextAction textAction textModel =
+    case textAction of
+        SetContent content ->
+            { textModel | content = content }
+
 
 existingOrder : Int -> Dict Int Int -> Int
 existingOrder shapeId shapeOrdering =
@@ -247,6 +285,13 @@ handleDragAction dragAction shapeId shape pos ({ mouse } as model) =
                                     { circleModel
                                         | cx = circleModel.cx - dragDiffX
                                         , cy = circleModel.cy - dragDiffY
+                                    }
+
+                            Model.Text textModel ->
+                                Model.Text
+                                    { textModel
+                                        | x = textModel.x - dragDiffX
+                                        , y = textModel.y - dragDiffY
                                     }
 
                 DragResize ->

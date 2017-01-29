@@ -20,7 +20,8 @@ import Html
         , li
         )
 import FontAwesome.Web as Icon
-import Html.Attributes exposing (class, href, classList)
+import Html.Attributes exposing (class, href, classList, value)
+import Html.Events exposing (onInput)
 import Pure
 import Model
     exposing
@@ -28,6 +29,7 @@ import Model
         , MouseModel
         , RectModel
         , CircleModel
+        , TextModel
         , Shape(..)
         , Tool(..)
         )
@@ -44,6 +46,7 @@ import Msg
             , SelectedShapeAction
             )
         , ShapeAction(..)
+        , TextAction(..)
         )
 import Svg exposing (Svg, svg, rect, circle, g)
 import Svg.Attributes as SA
@@ -147,6 +150,9 @@ viewShape selectedTool maybeSelectedShapeId shapeId shape =
             Circle circleModel ->
                 viewCircle selectedTool selected shapeId circleModel
 
+            Model.Text textModel ->
+                viewText selectedTool selected shapeId textModel
+
 
 selectionAttributes : Tool -> List (Svg.Attribute Msg)
 selectionAttributes tool =
@@ -168,6 +174,42 @@ selectionAttributes tool =
         , onMouseDownPreventingDefault <| BeginDrag DragMove
         ]
             ++ onSelectionClick
+
+
+viewText : Tool -> Bool -> Int -> TextModel -> Svg Msg
+viewText selectedTool selected shapeId textModel =
+    if selected then
+        g []
+            [ viewUnselectedText selectedTool shapeId textModel
+            , viewSelectedText selectedTool shapeId textModel
+            ]
+    else
+        viewUnselectedText selectedTool shapeId textModel
+
+
+viewSelectedText : Tool -> Int -> TextModel -> Svg Msg
+viewSelectedText selectedTool shapeId textModel =
+    Svg.text_
+        ([ x (toString textModel.x)
+         , y (toString textModel.y)
+         ]
+            ++ selectionAttributes selectedTool
+        )
+        [ Svg.text textModel.content ]
+
+
+viewUnselectedText : Tool -> Int -> TextModel -> Svg Msg
+viewUnselectedText selectedTool shapeId textModel =
+    Svg.text_
+        ([ x (toString textModel.x)
+         , y (toString textModel.y)
+         , stroke textModel.stroke
+         , strokeWidth (toString textModel.strokeWidth)
+         , fill textModel.fill
+         ]
+            ++ (onShapeClick selectedTool shapeId)
+        )
+        [ Svg.text textModel.content ]
 
 
 viewRect : Tool -> Bool -> Int -> RectModel -> Svg Msg
@@ -273,6 +315,7 @@ tools =
     [ ( PointerTool, Icon.mouse_pointer )
     , ( RectTool, Icon.square_o )
     , ( CircleTool, Icon.circle_o )
+    , ( TextTool, icon "font" )
     ]
 
 
@@ -356,8 +399,36 @@ sidebar maybeSelectedShapeId shapes mouse selectedTool =
         [ class <| "sidebar " ++ Pure.unit [ "1", "8" ] ]
         [ sidebarTools selectedTool
         , sidebarSelectedShapeActions maybeSelectedShapeId shapes
+        , sidebarSelectedShapeForm maybeSelectedShapeId shapes
         , sidebarMouse mouse
         ]
+
+
+sidebarSelectedShapeForm : Maybe Int -> Dict Int Shape -> Html Msg
+sidebarSelectedShapeForm maybeSelectedShapeId shapes =
+    case maybeSelectedShapeId of
+        Nothing ->
+            text ""
+
+        Just selectedShapeId ->
+            case Dict.get selectedShapeId shapes of
+                Nothing ->
+                    text ""
+
+                Just selectedShape ->
+                    case selectedShape of
+                        Model.Text textModel ->
+                            Html.input
+                                [ value textModel.content
+                                , onInput <|
+                                    SelectedShapeAction
+                                        << Msg.Text
+                                        << SetContent
+                                ]
+                                []
+
+                        _ ->
+                            text ""
 
 
 onDrawingAreaClick : Tool -> MouseModel -> Msg
@@ -388,6 +459,20 @@ onDrawingAreaClick tool mouse =
                     , stroke = "yellow"
                     , strokeWidth = 10
                     , fill = "red"
+                    }
+                )
+
+        TextTool ->
+            AddShape <|
+                (Model.Text
+                    { x = mouse.svgPosition.x
+                    , y = mouse.svgPosition.y
+                    , content = "Text"
+                    , fill = "black"
+                    , fontFamily = "Arial"
+                    , fontSize = 12
+                    , stroke = "transparent"
+                    , strokeWidth = 0
                     }
                 )
 
