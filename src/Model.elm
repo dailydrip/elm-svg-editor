@@ -18,6 +18,7 @@ import Drag exposing (DragAction)
 type alias Model =
     { mouse : MouseModel
     , shapes : Dict Int Shape
+    , shapeOrdering : Dict Int Int
     , selectedShapeId : Maybe Int
     , selectedTool : Tool
     , dragAction : Maybe DragAction
@@ -75,6 +76,7 @@ initialModel : Model
 initialModel =
     { mouse = initialMouseModel
     , shapes = initialShapes
+    , shapeOrdering = Dict.empty
     , selectedShapeId = Nothing
     , selectedTool = PointerTool
     , dragAction = Nothing
