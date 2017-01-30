@@ -117,9 +117,9 @@ initialShapes =
                 , y = 200
                 , width = 200
                 , height = 200
-                , stroke = "black"
+                , stroke = "#000000"
                 , strokeWidth = 10
-                , fill = "transparent"
+                , fill = "#ffffff"
                 }
             )
         |> Dict.insert 2
@@ -127,8 +127,8 @@ initialShapes =
                 { cx = 500
                 , cy = 200
                 , r = 50
-                , stroke = "red"
+                , stroke = "#ff0000"
                 , strokeWidth = 10
-                , fill = "yellow"
+                , fill = "#00ffff"
                 }
             )

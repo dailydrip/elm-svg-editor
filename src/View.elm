@@ -18,9 +18,11 @@ import Html
         , i
         , ul
         , li
+        , label
+        , input
         )
 import FontAwesome.Web as Icon
-import Html.Attributes exposing (class, href, classList, value)
+import Html.Attributes exposing (class, href, classList, value, type_, attribute)
 import Html.Events exposing (onInput)
 import Pure
 import Model
@@ -47,6 +49,7 @@ import Msg
             )
         , ShapeAction(..)
         , TextAction(..)
+        , RectAction(..)
         )
 import Svg exposing (Svg, svg, rect, circle, g)
 import Svg.Attributes as SA
@@ -418,17 +421,87 @@ sidebarSelectedShapeForm maybeSelectedShapeId shapes =
                 Just selectedShape ->
                     case selectedShape of
                         Model.Text textModel ->
-                            Html.input
-                                [ value textModel.content
-                                , onInput <|
-                                    SelectedShapeAction
-                                        << Msg.Text
-                                        << SetContent
-                                ]
-                                []
+                            textForm textModel
+
+                        Rect rectModel ->
+                            rectForm rectModel
 
                         _ ->
                             text ""
+
+
+textForm : TextModel -> Html Msg
+textForm textModel =
+    Html.input
+        [ value textModel.content
+        , onInput <|
+            SelectedShapeAction
+                << UpdateText
+                << SetContent
+        ]
+        []
+
+
+rectForm : RectModel -> Html Msg
+rectForm rectModel =
+    let
+        updateFloat : (Float -> RectAction) -> String -> Msg
+        updateFloat tagger input =
+            case String.toFloat input of
+                Ok val ->
+                    SelectedShapeAction <|
+                        UpdateRect <|
+                            (tagger val)
+
+                Err _ ->
+                    NoOp
+    in
+        div []
+            [ label [] [ text "x" ]
+            , input
+                [ type_ "number"
+                , value <| toString rectModel.x
+                , onInput <| updateFloat SetRectX
+                ]
+                []
+            , label [] [ text "y" ]
+            , input
+                [ type_ "number"
+                , value <| toString rectModel.y
+                , onInput <| updateFloat SetRectY
+                ]
+                []
+            , label [] [ text "width" ]
+            , input
+                [ type_ "number"
+                , attribute "min" "0"
+                , value <| toString rectModel.width
+                , onInput <| updateFloat SetRectWidth
+                ]
+                []
+            , label [] [ text "height" ]
+            , input
+                [ type_ "number"
+                , attribute "min" "0"
+                , value <| toString rectModel.height
+                , onInput <| updateFloat SetRectHeight
+                ]
+                []
+            , label [] [ text "stroke" ]
+            , input
+                [ type_ "color"
+                , value rectModel.stroke
+                , onInput <| SelectedShapeAction << UpdateRect << SetRectStroke
+                ]
+                []
+            , label [] [ text "fill" ]
+            , input
+                [ type_ "color"
+                , value rectModel.fill
+                , onInput <| SelectedShapeAction << UpdateRect << SetRectFill
+                ]
+                []
+            ]
 
 
 onDrawingAreaClick : Tool -> MouseModel -> Msg
@@ -456,9 +529,9 @@ onDrawingAreaClick tool mouse =
                     { cx = mouse.svgPosition.x
                     , cy = mouse.svgPosition.y
                     , r = 25
-                    , stroke = "yellow"
+                    , stroke = "#00ffff"
                     , strokeWidth = 10
-                    , fill = "red"
+                    , fill = "#ff0000"
                     }
                 )
 
@@ -468,7 +541,7 @@ onDrawingAreaClick tool mouse =
                     { x = mouse.svgPosition.x
                     , y = mouse.svgPosition.y
                     , content = "Text"
-                    , fill = "black"
+                    , fill = "#000000"
                     , fontFamily = "Arial"
                     , fontSize = 12
                     , stroke = "transparent"

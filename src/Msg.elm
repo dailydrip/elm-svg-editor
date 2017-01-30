@@ -4,6 +4,7 @@ module Msg
         , ModifyShapeMsg(..)
         , ShapeAction(..)
         , TextAction(..)
+        , RectAction(..)
         )
 
 import Model exposing (Shape(..), Tool(..), SvgPosition)
@@ -31,11 +32,21 @@ type ShapeAction
     | SendBackward
     | BringForward
     | BringToFront
-    | Text TextAction
+    | UpdateText TextAction
+    | UpdateRect RectAction
 
 
 type TextAction
     = SetContent String
+
+
+type RectAction
+    = SetRectX Float
+    | SetRectY Float
+    | SetRectWidth Float
+    | SetRectHeight Float
+    | SetRectFill String
+    | SetRectStroke String
 
 
 type ModifyShapeMsg

@@ -10,7 +10,7 @@ import Model
         , TextModel
         , SvgPosition
         )
-import Msg exposing (Msg(..), ShapeAction(..), TextAction(..))
+import Msg exposing (Msg(..), ShapeAction(..), TextAction(..), RectAction(..))
 import Drag exposing (DragAction(..))
 import Dict exposing (Dict)
 
@@ -135,9 +135,61 @@ handleShapeAction shapeAction ({ selectedShapeId, shapeOrdering } as model) =
             }
                 ! []
 
-        Msg.Text textAction ->
+        UpdateText textAction ->
             { model | shapes = updateTextShape textAction selectedShapeId model.shapes }
                 ! []
+
+        UpdateRect rectAction ->
+            { model | shapes = updateRectShape rectAction selectedShapeId model.shapes }
+                ! []
+
+
+updateRectShape : RectAction -> Maybe Int -> Dict Int Shape -> Dict Int Shape
+updateRectShape rectAction maybeSelectedShapeId shapes =
+    case maybeSelectedShapeId of
+        Nothing ->
+            shapes
+
+        Just selectedShapeId ->
+            case Dict.get selectedShapeId shapes of
+                Nothing ->
+                    shapes
+
+                Just shape ->
+                    case shape of
+                        Rect rectModel ->
+                            Dict.insert selectedShapeId
+                                (Rect <|
+                                    handleRectAction
+                                        rectAction
+                                        rectModel
+                                )
+                                shapes
+
+                        _ ->
+                            shapes
+
+
+handleRectAction : RectAction -> RectModel -> RectModel
+handleRectAction rectAction rectModel =
+    case rectAction of
+        SetRectX x ->
+            { rectModel | x = x }
+
+        SetRectY y ->
+            { rectModel | y = y }
+
+        SetRectWidth width ->
+            { rectModel | width = width }
+
+        SetRectHeight height ->
+            { rectModel | height = height }
+
+        SetRectFill fill ->
+            { rectModel | fill = fill }
+
+        SetRectStroke stroke ->
+            { rectModel | stroke = stroke }
 
 
 updateTextShape : TextAction -> Maybe Int -> Dict Int Shape -> Dict Int Shape
