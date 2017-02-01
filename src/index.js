@@ -6,6 +6,18 @@ require('purecss/build/buttons-min.css')
 // Custom styles
 require('./main.css')
 
+// Firebase
+let firebase = require('firebase')
+firebase.initializeApp({
+  apiKey: "AIzaSyDP3V-9e3cpvMSf5c6NPRdMgkP4lAK3BeI",
+  authDomain: "elm-svg-editor.firebaseapp.com",
+  databaseURL: "https://elm-svg-editor.firebaseio.com",
+  storageBucket: "elm-svg-editor.appspot.com",
+  messagingSenderId: "1090218891778"
+})
+let database = firebase.database()
+window.database = database
+
 let Elm = require('./Main.elm')
 let root = document.getElementById('root')
 let app = Elm.Main.embed(root, null)
