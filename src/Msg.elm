@@ -10,6 +10,7 @@ module Msg
 import Model exposing (Shape(..), Tool(..), SvgPosition)
 import Mouse
 import Drag exposing (DragAction)
+import Json.Encode exposing (Value)
 
 
 type Msg
@@ -25,6 +26,7 @@ type Msg
     | BeginDrag DragAction
     | EndDrag
     | SelectedShapeAction ShapeAction
+    | ReceiveShapes Value
 
 
 type ShapeAction

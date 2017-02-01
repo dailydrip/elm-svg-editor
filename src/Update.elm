@@ -13,6 +13,10 @@ import Model
 import Msg exposing (Msg(..), ShapeAction(..), TextAction(..), RectAction(..))
 import Drag exposing (DragAction(..))
 import Dict exposing (Dict)
+import Encoder exposing (shapesEncoder)
+import Ports exposing (persistShapes)
+import Json.Decode as Decode
+import Decoder exposing (shapesDecoder)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -55,7 +59,8 @@ update msg ({ mouse } as model) =
                 nextModel =
                     handleDrag pos model
             in
-                { nextModel | mouse = nextMouse } ! []
+                ({ nextModel | mouse = nextMouse } ! [])
+                    |> andSendShapes
 
         SelectShape shapeId ->
             { model
@@ -73,6 +78,7 @@ update msg ({ mouse } as model) =
             ( model |> addShape shape
             , Cmd.none
             )
+                |> andSendShapes
 
         SelectTool tool ->
             { model | selectedTool = tool } ! []
@@ -106,6 +112,14 @@ update msg ({ mouse } as model) =
 
         SelectedShapeAction shapeAction ->
             handleShapeAction shapeAction model
+                |> andSendShapes
+
+        ReceiveShapes value ->
+            value
+                |> Decode.decodeValue shapesDecoder
+                |> Result.map (\shapes -> { model | shapes = shapes } ! [])
+                |> Debug.log "decode"
+                |> Result.withDefault (model ! [])
 
 
 handleShapeAction : ShapeAction -> Model -> ( Model, Cmd Msg )
@@ -417,3 +431,20 @@ addShape shape model =
                 |> Dict.insert (maxId + 1) shape
     in
         { model | shapes = nextShapes }
+
+
+sendShapes : Dict Int Shape -> Cmd Msg
+sendShapes shapes =
+    shapes
+        |> shapesEncoder
+        |> persistShapes
+
+
+andSendShapes : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+andSendShapes ( model, cmd ) =
+    ( model
+    , Cmd.batch
+        [ cmd
+        , sendShapes model.shapes
+        ]
+    )

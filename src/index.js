@@ -16,11 +16,21 @@ firebase.initializeApp({
   messagingSenderId: "1090218891778"
 })
 let database = firebase.database()
-window.database = database
 
 let Elm = require('./Main.elm')
 let root = document.getElementById('root')
 let app = Elm.Main.embed(root, null)
+
+let ref = database.ref('shapes/2')
+app.ports.persistShapes.subscribe((shapes) => {
+  ref.set(shapes)
+})
+ref.on('value', (snapshot) => {
+  let val = snapshot.val()
+  delete val.ignoreme
+  console.log(val)
+  app.ports.receiveShapes.send(val)
+})
 
 // We add a quick function to find the svg element, given an ancestor
 let getSvg = (el) => el.getElementsByTagName('svg')[0]
