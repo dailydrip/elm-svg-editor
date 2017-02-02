@@ -1,4 +1,3 @@
-const autoprefixer = require('autoprefixer');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const paths = require('../config/paths');
@@ -84,14 +83,6 @@ module.exports = {
       require("postcss-import")({ addDependencyTo: webpack }),
       require("postcss-url")(),
       require("postcss-cssnext")(),
-      autoprefixer({
-        browsers: [
-          '>1%',
-          'last 4 versions',
-          'Firefox ESR',
-          'not ie < 9'
-        ]
-      }),
       require("postcss-browser-reporter")(),
       require("postcss-reporter")(),
     ];

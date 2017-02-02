@@ -5,7 +5,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const getClientEnvironment = require('./env');
-
 const root = process.cwd();
 
 module.exports = {
@@ -14,18 +13,16 @@ module.exports = {
     paths.entry
   ],
   output: {
-
     // The build folder.
     path: paths.dist,
 
     // Append leading slash when production assets are referenced in the html.
-    publicPath: '/',
+    publicPath: '/elm-svg-editor/',
 
     // Generated JS files.
     filename: 'js/[name].[chunkhash:8].js'
   },
   resolveLoader: {
-
     // Look for loaders in own ./node_modules
     root: paths.ownModules,
     moduleTemplates: [ '*-loader' ]
@@ -37,6 +34,14 @@ module.exports = {
   module: {
     noParse: /\.elm$/,
     loaders: [
+      {
+        test: /\.js$/,
+        exclude: /(node_modules|bower_components)/,
+        loader: 'babel',
+        query: {
+          presets: ['es2015', 'babili']
+        }
+      },
       {
         test: /\.elm$/,
         exclude: [ /elm-stuff/, /node_modules/ ],
@@ -75,16 +80,13 @@ module.exports = {
       }
     ]
   },
-  postcss: function() {
+  postcss: function(webpack) {
     return [
-      autoprefixer({
-        browsers: [
-          '>1%',
-          'last 4 versions',
-          'Firefox ESR',
-          'not ie < 9'
-        ]
-      })
+      require("postcss-import")({ addDependencyTo: webpack }),
+      require("postcss-url")(),
+      require("postcss-cssnext")(),
+      require("postcss-browser-reporter")(),
+      require("postcss-reporter")(),
     ];
   },
   plugins: [
@@ -95,16 +97,6 @@ module.exports = {
       root: root,
       verbose: true,
       dry: false
-    }),
-
-    // Minify the compiled JavaScript.
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false
-      },
-      output: {
-        comments: false
-      }
     }),
 
     new HtmlWebpackPlugin({
@@ -119,7 +111,7 @@ module.exports = {
         removeEmptyAttributes: true,
         removeStyleLinkTypeAttributes: true,
         keepClosingSlash: true,
-        minifyJS: true,
+        minifyJS: false,
         minifyCSS: true,
         minifyURLs: true
       }
