@@ -43,13 +43,21 @@ update msg ({ mouse } as model) =
             let
                 nextMouse =
                     { mouse | down = False }
+
+                nextModel =
+                    { model
+                        | mouse = nextMouse
+                        , dragAction = Nothing
+                        , comparedShape = Nothing
+                    }
             in
-                { model
-                    | mouse = nextMouse
-                    , dragAction = Nothing
-                    , comparedShape = Nothing
-                }
-                    ! []
+                case model.dragAction of
+                    Just _ ->
+                        ( nextModel, sendShapes nextModel.shapes )
+
+                    Nothing ->
+                        nextModel
+                            ! []
 
         MouseSvgMove pos ->
             let
@@ -60,7 +68,6 @@ update msg ({ mouse } as model) =
                     handleDrag pos model
             in
                 ({ nextModel | mouse = nextMouse } ! [])
-                    |> andSendShapes
 
         SelectShape shapeId ->
             { model
