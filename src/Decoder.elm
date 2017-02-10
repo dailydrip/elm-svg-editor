@@ -1,4 +1,4 @@
-module Decoder exposing (shapesDecoder)
+module Decoder exposing (shapesDecoder, userDecoder)
 
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline
@@ -7,7 +7,7 @@ import Json.Decode.Pipeline
         , required
         , custom
         )
-import Model exposing (Shape(..), RectModel, CircleModel, TextModel)
+import Model exposing (Shape(..), RectModel, CircleModel, TextModel, User)
 import Dict exposing (Dict)
 
 
@@ -89,3 +89,11 @@ textModelDecoder =
         |> required "stroke" string
         |> required "strokeWidth" float
         |> required "fill" string
+
+
+userDecoder : Decoder User
+userDecoder =
+    decode User
+        |> required "displayName" string
+        |> required "email" string
+        |> required "photoURL" string

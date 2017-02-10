@@ -4,6 +4,7 @@ import Html
     exposing
         ( Html
         , a
+        , button
         , dd
         , div
         , dl
@@ -85,6 +86,7 @@ view model =
                 [ text "from "
                 , a [ href "https://www.dailydrip.com" ] [ text "DailyDrip" ]
                 ]
+            , authenticationSection model
             ]
         , div
             [ class Pure.grid ]
@@ -97,6 +99,27 @@ view model =
                 model.shapeOrdering
             ]
         ]
+
+
+authenticationSection : Model -> Html Msg
+authenticationSection model =
+    case model.user of
+        Nothing ->
+            button
+                [ class Pure.button
+                , Html.Events.onClick <| Msg.RequestAuthentication
+                ]
+                [ text "Log in" ]
+
+        Just user ->
+            Html.span []
+                [ p [] [ text user.displayName ]
+                , button
+                    [ class Pure.button
+                    , Html.Events.onClick <| Msg.LogOut
+                    ]
+                    [ text "Log out" ]
+                ]
 
 
 drawingArea :

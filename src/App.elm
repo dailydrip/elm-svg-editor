@@ -19,4 +19,5 @@ subscriptions model =
         , Mouse.ups MouseUp
         , Ports.receiveSvgMouseCoordinates MouseSvgMove
         , Ports.receiveShapes ReceiveShapes
+        , Ports.receiveUser ReceiveUser
         ]

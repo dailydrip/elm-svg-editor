@@ -8,6 +8,7 @@ module Model
         , SvgPosition
         , Shape(..)
         , Tool(..)
+        , User
         , initialModel
         )
 
@@ -24,6 +25,14 @@ type alias Model =
     , selectedTool : Tool
     , dragAction : Maybe DragAction
     , comparedShape : Maybe Shape
+    , user : Maybe User
+    }
+
+
+type alias User =
+    { displayName : String
+    , email : String
+    , photoUrl : String
     }
 
 
@@ -96,6 +105,7 @@ initialModel =
     , selectedTool = PointerTool
     , dragAction = Nothing
     , comparedShape = Nothing
+    , user = Nothing
     }
 
 

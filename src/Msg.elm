@@ -27,6 +27,9 @@ type Msg
     | EndDrag
     | SelectedShapeAction ShapeAction
     | ReceiveShapes Value
+    | RequestAuthentication
+    | ReceiveUser Value
+    | LogOut
 
 
 type ShapeAction

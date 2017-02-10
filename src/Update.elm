@@ -16,7 +16,7 @@ import Dict exposing (Dict)
 import Encoder exposing (shapesEncoder)
 import Ports exposing (persistShapes)
 import Json.Decode as Decode
-import Decoder exposing (shapesDecoder)
+import Decoder exposing (shapesDecoder, userDecoder)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -125,8 +125,20 @@ update msg ({ mouse } as model) =
             value
                 |> Decode.decodeValue shapesDecoder
                 |> Result.map (\shapes -> { model | shapes = shapes } ! [])
-                |> Debug.log "decode"
                 |> Result.withDefault (model ! [])
+
+        RequestAuthentication ->
+            model ! [ Ports.requestAuthentication () ]
+
+        ReceiveUser value ->
+            value
+                |> Decode.decodeValue userDecoder
+                |> Debug.log "decode user"
+                |> Result.map (\user -> { model | user = Just user } ! [])
+                |> Result.withDefault (model ! [])
+
+        LogOut ->
+            { model | user = Nothing } ! [ Ports.logOut () ]
 
 
 handleShapeAction : ShapeAction -> Model -> ( Model, Cmd Msg )
