@@ -13,6 +13,7 @@ import Model
         , RectModel
         , CircleModel
         , TextModel
+        , ImageModel
         , User
         , Upload(..)
         , ImageUpload(..)
@@ -60,8 +61,22 @@ specificShapeDecoder typeStr =
             decode Text
                 |> custom textModelDecoder
 
+        "image" ->
+            decode Image
+                |> custom imageModelDecoder
+
         _ ->
             fail "unknown shape type"
+
+
+imageModelDecoder : Decoder ImageModel
+imageModelDecoder =
+    decode ImageModel
+        |> required "x" float
+        |> required "y" float
+        |> required "width" float
+        |> required "height" float
+        |> required "href" string
 
 
 rectModelDecoder : Decoder RectModel

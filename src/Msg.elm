@@ -30,6 +30,7 @@ type Msg
     | RequestAuthentication
     | ReceiveUser Value
     | BeginImageUpload SvgPosition
+    | CancelImageUpload
     | StoreFile String
     | ReceiveFileStorageUpdate Value
     | LogOut

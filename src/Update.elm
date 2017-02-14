@@ -146,15 +146,28 @@ update msg ({ mouse } as model) =
             { model | imageUpload = Just (AwaitingFileSelection svgPosition) }
                 ! []
 
+        CancelImageUpload ->
+            { model | imageUpload = Nothing } ! []
+
         StoreFile id ->
-            { model | imageUpload = Just (AwaitingCompletion (Running 0)) } ! [ Ports.storeFile id ]
+            case model.imageUpload of
+                Just (AwaitingFileSelection svgPosition) ->
+                    { model | imageUpload = Just (AwaitingCompletion svgPosition (Running 0)) } ! [ Ports.storeFile id ]
+
+                _ ->
+                    model ! []
 
         ReceiveFileStorageUpdate value ->
-            handleImageUpload model value ! []
+            case model.imageUpload of
+                Just (AwaitingCompletion svgPosition _) ->
+                    handleImageUpload model svgPosition value ! []
+
+                _ ->
+                    model ! []
 
 
-handleImageUpload : Model -> Decode.Value -> Model
-handleImageUpload model value =
+handleImageUpload : Model -> SvgPosition -> Decode.Value -> Model
+handleImageUpload model svgPosition value =
     let
         uploadResult =
             Decode.decodeValue uploadDecoder (Debug.log "val" value)
@@ -166,11 +179,23 @@ handleImageUpload model value =
                         let
                             _ =
                                 Debug.log "image is available at" fileUrl
+
+                            imageShape =
+                                Image
+                                    { x = svgPosition.x
+                                    , y = svgPosition.y
+                                    , width = 100
+                                    , height = 100
+                                    , href = fileUrl
+                                    }
+
+                            nextModel =
+                                addShape imageShape model
                         in
-                            { model | imageUpload = Nothing }
+                            { nextModel | imageUpload = Nothing }
 
                     u ->
-                        { model | imageUpload = Just (AwaitingCompletion u) }
+                        { model | imageUpload = Just (AwaitingCompletion svgPosition u) }
 
             Err error ->
                 let
@@ -416,6 +441,13 @@ handleDragAction dragAction shapeId shape pos ({ mouse } as model) =
                                     { textModel
                                         | x = textModel.x - dragDiffX
                                         , y = textModel.y - dragDiffY
+                                    }
+
+                            Image imageModel ->
+                                Image
+                                    { imageModel
+                                        | x = imageModel.x - dragDiffX
+                                        , y = imageModel.y - dragDiffY
                                     }
 
                 DragResize ->
