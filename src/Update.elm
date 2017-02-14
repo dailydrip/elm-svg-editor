@@ -9,6 +9,8 @@ import Model
         , CircleModel
         , TextModel
         , SvgPosition
+        , ImageUpload(..)
+        , Upload(..)
         )
 import Msg exposing (Msg(..), ShapeAction(..), TextAction(..), RectAction(..))
 import Drag exposing (DragAction(..))
@@ -16,7 +18,7 @@ import Dict exposing (Dict)
 import Encoder exposing (shapesEncoder)
 import Ports exposing (persistShapes)
 import Json.Decode as Decode
-import Decoder exposing (shapesDecoder, userDecoder)
+import Decoder exposing (shapesDecoder, userDecoder, uploadDecoder)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -139,6 +141,43 @@ update msg ({ mouse } as model) =
 
         LogOut ->
             { model | user = Nothing } ! [ Ports.logOut () ]
+
+        BeginImageUpload svgPosition ->
+            { model | imageUpload = Just (AwaitingFileSelection svgPosition) }
+                ! []
+
+        StoreFile id ->
+            { model | imageUpload = Just (AwaitingCompletion (Running 0)) } ! [ Ports.storeFile id ]
+
+        ReceiveFileStorageUpdate value ->
+            handleImageUpload model value ! []
+
+
+handleImageUpload : Model -> Decode.Value -> Model
+handleImageUpload model value =
+    let
+        uploadResult =
+            Decode.decodeValue uploadDecoder (Debug.log "val" value)
+    in
+        case uploadResult of
+            Ok upload ->
+                case upload of
+                    Completed fileUrl ->
+                        let
+                            _ =
+                                Debug.log "image is available at" fileUrl
+                        in
+                            { model | imageUpload = Nothing }
+
+                    u ->
+                        { model | imageUpload = Just (AwaitingCompletion u) }
+
+            Err error ->
+                let
+                    _ =
+                        Debug.log "error decoding upload" error
+                in
+                    model
 
 
 handleShapeAction : ShapeAction -> Model -> ( Model, Cmd Msg )

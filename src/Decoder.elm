@@ -1,4 +1,4 @@
-module Decoder exposing (shapesDecoder, userDecoder)
+module Decoder exposing (shapesDecoder, userDecoder, uploadDecoder)
 
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline
@@ -7,7 +7,16 @@ import Json.Decode.Pipeline
         , required
         , custom
         )
-import Model exposing (Shape(..), RectModel, CircleModel, TextModel, User)
+import Model
+    exposing
+        ( Shape(..)
+        , RectModel
+        , CircleModel
+        , TextModel
+        , User
+        , Upload(..)
+        , ImageUpload(..)
+        )
 import Dict exposing (Dict)
 
 
@@ -97,3 +106,13 @@ userDecoder =
         |> required "displayName" string
         |> required "email" string
         |> required "photoURL" string
+
+
+uploadDecoder : Decoder Upload
+uploadDecoder =
+    oneOf <|
+        [ field "running" <| map Running float
+        , field "error" <| map Errored string
+        , field "paused" <| map Paused float
+        , field "complete" <| map Completed string
+        ]

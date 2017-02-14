@@ -29,6 +29,9 @@ type Msg
     | ReceiveShapes Value
     | RequestAuthentication
     | ReceiveUser Value
+    | BeginImageUpload SvgPosition
+    | StoreFile String
+    | ReceiveFileStorageUpdate Value
     | LogOut
 
 

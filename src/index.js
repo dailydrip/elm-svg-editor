@@ -16,14 +16,78 @@ firebase.initializeApp({
   messagingSenderId: "1090218891778"
 })
 let database = firebase.database()
+let storage = firebase.storage()
 
 let Elm = require('./Main.elm')
 let root = document.getElementById('root')
 let app = Elm.Main.embed(root, null)
 
-let ref = database.ref('shapes/2')
+let basePath = 'shapes/2'
+let dbRef = database.ref(basePath)
+
 app.ports.persistShapes.subscribe((shapes) => {
-  ref.set(shapes)
+  dbRef.set(shapes)
+})
+
+app.ports.storeFile.subscribe((id) => {
+  let node = document.getElementById(id)
+  if (node === null) {
+    return
+  }
+
+  // If your file upload field allows multiple files, you might
+  // want to consider turning this into a `for` loop.
+  let file = node.files[0]
+  let reader = new FileReader()
+
+  // FileReader API is event based. Once a file is selected
+  // it fires events. We hook into the `onload` event for our reader.
+  reader.onload = (event) => {
+    // The event carries the `target`. The `target` is the file
+    // that was selected. The result is base64 encoded contents of the file.
+    let base64encoded = event.target.result;
+    // We build up the `ImagePortData` object here that will be passed to our Elm
+    // runtime through the `fileContentRead` subscription.
+    let fileData = {
+      contents: base64encoded,
+      filename: file.name
+    }
+
+    console.log(fileData)
+
+    let path = basePath + '/' + fileData.filename
+    let storageRef = storage.ref(path)
+
+    let uploadTask =
+      storageRef
+        .putString(fileData.contents, firebase.storage.StringFormat.DATA_URL)
+
+    uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
+      // In-progress callback
+      (snapshot) => {
+        let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+        switch (snapshot.state) {
+          case firebase.storage.TaskState.PAUSED:
+            app.ports.receiveFileStorageUpdate.send({paused: progress})
+            break
+          case firebase.storage.TaskState.RUNNING:
+            app.ports.receiveFileStorageUpdate.send({running: progress})
+            break
+        }
+      },
+      // Error callback
+      (error) => {
+        app.ports.receiveFileStorageUpdate.send({error: error.message})
+      },
+      // Success callback
+      () => {
+        app.ports.receiveFileStorageUpdate.send({complete: uploadTask.snapshot.downloadURL})
+      }
+    )
+  }
+
+  // Connect our FileReader with the file that was selected in our `input` node.
+  reader.readAsDataURL(file);
 })
 
 // Prepare to use the Google authentication provider
@@ -56,7 +120,7 @@ app.ports.logOut.subscribe(() => {
   firebase.auth().signOut()
 })
 
-ref.on('value', (snapshot) => {
+dbRef.on('value', (snapshot) => {
   let val = snapshot.val()
   delete val.ignoreme
   console.log(val)

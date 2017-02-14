@@ -20,4 +20,5 @@ subscriptions model =
         , Ports.receiveSvgMouseCoordinates MouseSvgMove
         , Ports.receiveShapes ReceiveShapes
         , Ports.receiveUser ReceiveUser
+        , Ports.receiveFileStorageUpdate ReceiveFileStorageUpdate
         ]

@@ -8,6 +8,8 @@ module Model
         , SvgPosition
         , Shape(..)
         , Tool(..)
+        , ImageUpload(..)
+        , Upload(..)
         , User
         , initialModel
         )
@@ -15,6 +17,18 @@ module Model
 import Mouse
 import Dict exposing (Dict)
 import Drag exposing (DragAction)
+
+
+type ImageUpload
+    = AwaitingFileSelection SvgPosition
+    | AwaitingCompletion Upload
+
+
+type Upload
+    = Running Float
+    | Paused Float
+    | Errored String
+    | Completed String
 
 
 type alias Model =
@@ -26,6 +40,7 @@ type alias Model =
     , dragAction : Maybe DragAction
     , comparedShape : Maybe Shape
     , user : Maybe User
+    , imageUpload : Maybe ImageUpload
     }
 
 
@@ -41,6 +56,7 @@ type Tool
     | RectTool
     | CircleTool
     | TextTool
+    | ImageTool
 
 
 type alias MouseModel =
@@ -106,6 +122,7 @@ initialModel =
     , dragAction = Nothing
     , comparedShape = Nothing
     , user = Nothing
+    , imageUpload = Nothing
     }
 
 
