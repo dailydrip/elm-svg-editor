@@ -1,4 +1,4 @@
-module Decoder exposing (shapesDecoder, userDecoder)
+module Decoder exposing (shapesDecoder, userDecoder, uploadDecoder)
 
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline
@@ -7,7 +7,15 @@ import Json.Decode.Pipeline
         , required
         , custom
         )
-import Model exposing (Shape(..), RectModel, CircleModel, TextModel, User)
+import Model
+    exposing
+        ( Shape(..)
+        , RectModel
+        , CircleModel
+        , TextModel
+        , User
+        , Upload(..)
+        )
 import Dict exposing (Dict)
 
 
@@ -97,3 +105,16 @@ userDecoder =
         |> required "displayName" string
         |> required "email" string
         |> required "photoURL" string
+
+
+uploadDecoder : Decoder Upload
+uploadDecoder =
+    -- We'll use `oneOf`, which will try different decoders until it finds a
+    -- successful decoder.
+    oneOf <|
+        -- Then we'll look at each possible shape and decode them appropriately
+        [ field "running" <| map Running float
+        , field "error" <| map Errored string
+        , field "paused" <| map Paused float
+        , field "complete" <| map Completed string
+        ]

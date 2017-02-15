@@ -30,6 +30,10 @@ type Msg
     | RequestAuthentication
     | ReceiveUser Value
     | LogOut
+    | BeginImageUpload SvgPosition
+    | CancelImageUpload
+    | StoreFile String
+    | ReceiveFileStorageUpdate Value
 
 
 type ShapeAction

@@ -10,11 +10,38 @@ module Model
         , Tool(..)
         , User
         , initialModel
+        , ImageUpload(..)
+        , Upload(..)
         )
 
 import Mouse
 import Dict exposing (Dict)
 import Drag exposing (DragAction)
+
+
+-- We're going to have two cases for an ImageUpload - it's either waiting for a
+-- file to be selected (and knows where to put it on the canvas), or it's
+-- waiting for the Upload to complete. We'll introduce an `Upload` type to
+-- define the states our upload can have.
+
+
+type ImageUpload
+    = AwaitingFileSelection SvgPosition
+    | AwaitingCompletion SvgPosition Upload
+
+
+
+-- An upload can be running or paused, in which case we want to know how far
+-- along it is. It can have errored, in which case we'd like to know the error
+-- message. Or it can be completed, in which case we'd like to know the path to
+-- the file on Firebase.
+
+
+type Upload
+    = Running Float
+    | Paused Float
+    | Errored String
+    | Completed String
 
 
 type alias Model =
@@ -26,6 +53,7 @@ type alias Model =
     , dragAction : Maybe DragAction
     , comparedShape : Maybe Shape
     , user : Maybe User
+    , imageUpload : Maybe ImageUpload
     }
 
 
@@ -106,6 +134,7 @@ initialModel =
     , dragAction = Nothing
     , comparedShape = Nothing
     , user = Nothing
+    , imageUpload = Nothing
     }
 
 

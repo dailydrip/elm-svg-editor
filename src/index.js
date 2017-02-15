@@ -16,14 +16,94 @@ firebase.initializeApp({
   messagingSenderId: "1090218891778"
 })
 let database = firebase.database()
+let storage = firebase.storage()
 
 let Elm = require('./Main.elm')
 let root = document.getElementById('root')
 let app = Elm.Main.embed(root, null)
 
-let ref = database.ref('shapes/2')
+let basePath = 'shapes/2'
+let dbRef = database.ref(basePath)
 app.ports.persistShapes.subscribe((shapes) => {
-  ref.set(shapes)
+  dbRef.set(shapes)
+})
+
+app.ports.storeFile.subscribe((id) => {
+  // Get the element by id
+  let node = document.getElementById(id)
+  if (node === null) {
+    return
+  }
+
+  // Get the file and make a new FileReader
+  // If your file upload field allows multiple files, you might
+  // want to consider turning this into a `for` loop.
+  let file = node.files[0]
+  let reader = new FileReader()
+
+  // FileReader API is event based. Once a file is selected
+  // it fires events. We hook into the `onload` event for our reader.
+  reader.onload = (event) => {
+    // The event carries the `target`. The `target` is the file
+    // that was selected. The result is base64 encoded contents of the file.
+    let base64encoded = event.target.result;
+    // We build up an object that has our file contents and file name.
+    let fileData = {
+      contents: base64encoded,
+      filename: file.name
+    }
+
+    // We build the path that we'll use to store the file
+    let path = basePath + '/' + fileData.filename
+    // and we generate a reference to that path on the storage system
+    let storageRef = storage.ref(path)
+
+    // We create a new uploadTask for putting our data into Firebase. We'll use
+    // `putString` for this because we get a data url version of the file from
+    // our event's target.
+    let uploadTask =
+      storageRef
+        .putString(fileData.contents, firebase.storage.StringFormat.DATA_URL)
+
+    // Then when the state changes for our uploadTask, we'll handle it.
+    // This function takes three callbacks:
+    //
+    // - next, for when new things happen
+    // - error, for when there are errors
+    // - complete, for when the file upload has completed
+    uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
+      // In-progress callback
+      // When the 'next' event fires, we'll determine the progress of the
+      // upload, and send a file storage update record into our Elm app.
+      (snapshot) => {
+        let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+        // We want to know if it's paused or running
+        switch (snapshot.state) {
+          case firebase.storage.TaskState.PAUSED:
+            app.ports.receiveFileStorageUpdate.send({paused: progress})
+            break
+          case firebase.storage.TaskState.RUNNING:
+            app.ports.receiveFileStorageUpdate.send({running: progress})
+            break
+        }
+      },
+      // Error callback
+      // If there's an error, we need to tell the app about it
+      (error) => {
+        app.ports.receiveFileStorageUpdate.send({error: error.message})
+      },
+      // Success callback
+      // When we succeed, we'll send a 'complete' update and tell the Elm app
+      // where the uploaded file can be accessed publicly.
+      () => {
+        app.ports.receiveFileStorageUpdate.send({complete: uploadTask.snapshot.downloadURL})
+      }
+    )
+  }
+
+  // Finally, we'll tell the reader to read the file
+  // Connect our FileReader with the file that was selected in our `input` node.
+  reader.readAsDataURL(file);
 })
 
 // Prepare to use the Google authentication provider
@@ -56,7 +136,7 @@ app.ports.logOut.subscribe(() => {
   firebase.auth().signOut()
 })
 
-ref.on('value', (snapshot) => {
+dbRef.on('value', (snapshot) => {
   let val = snapshot.val()
   delete val.ignoreme
   console.log(val)

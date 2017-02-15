@@ -9,6 +9,8 @@ import Model
         , CircleModel
         , TextModel
         , SvgPosition
+        , ImageUpload(..)
+        , Upload(..)
         )
 import Msg exposing (Msg(..), ShapeAction(..), TextAction(..), RectAction(..))
 import Drag exposing (DragAction(..))
@@ -16,7 +18,7 @@ import Dict exposing (Dict)
 import Encoder exposing (shapesEncoder)
 import Ports exposing (persistShapes)
 import Json.Decode as Decode
-import Decoder exposing (shapesDecoder, userDecoder)
+import Decoder exposing (shapesDecoder, userDecoder, uploadDecoder)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -139,6 +141,80 @@ update msg ({ mouse } as model) =
 
         LogOut ->
             { model | user = Nothing } ! [ Ports.logOut () ]
+
+        -- We need to handle a message that signals we'll start the image upload
+        -- UI process
+        BeginImageUpload svgPosition ->
+            { model | imageUpload = Just (AwaitingFileSelection svgPosition) }
+                ! []
+
+        -- We have to support canceling the process
+        CancelImageUpload ->
+            { model | imageUpload = Nothing } ! []
+
+        -- When we ask to store a file, if we're in the right state, we'll
+        -- transition to the `AwaitingCompletion` state, say we're Running with
+        -- 0% complete, and tell the JavaScript to store the file at our DOM
+        -- node
+        StoreFile id ->
+            case model.imageUpload of
+                Just (AwaitingFileSelection svgPosition) ->
+                    { model | imageUpload = Just (AwaitingCompletion svgPosition (Running 0)) } ! [ Ports.storeFile id ]
+
+                _ ->
+                    model ! []
+
+        -- When we get updates on the status, we'll handle the inbound
+        -- information only if we're waiting to hear about it. We'll also
+        -- pattern match out the svg position so we can ultimately place the
+        -- uploaded image in the correct position when it completes uploading
+        ReceiveFileStorageUpdate value ->
+            case model.imageUpload of
+                Just (AwaitingCompletion svgPosition _) ->
+                    handleImageUpload model svgPosition value ! []
+
+                _ ->
+                    model ! []
+
+
+
+-- Handling the upload consists of decoding the information we're passed and
+-- updating the `imageUpload` field in the model
+
+
+handleImageUpload : Model -> SvgPosition -> Decode.Value -> Model
+handleImageUpload model svgPosition value =
+    let
+        -- We'll use the `uploadDecoder` to decode the value
+        uploadResult =
+            Decode.decodeValue uploadDecoder (Debug.log "val" value)
+    in
+        case uploadResult of
+            -- if it successfully decodes...
+            Ok upload ->
+                -- We'll look at its state
+                case upload of
+                    -- If it's a complete upload, we'll just notify ourselves in
+                    -- the console for now and cancel the imageUpload
+                    Completed fileUrl ->
+                        let
+                            _ =
+                                Debug.log "image is available at" fileUrl
+                        in
+                            { model | imageUpload = Nothing }
+
+                    -- Otherwise, we'll update the imageUpload with the upload
+                    -- state
+                    u ->
+                        { model | imageUpload = Just (AwaitingCompletion svgPosition u) }
+
+            -- And if there was an error, we'll print it to the console for now
+            Err error ->
+                let
+                    _ =
+                        Debug.log "error decoding upload" error
+                in
+                    model
 
 
 handleShapeAction : ShapeAction -> Model -> ( Model, Cmd Msg )
