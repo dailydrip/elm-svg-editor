@@ -69,6 +69,7 @@ type Tool
     | RectTool
     | CircleTool
     | TextTool
+    | ImageTool
 
 
 type alias MouseModel =

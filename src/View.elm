@@ -21,10 +21,20 @@ import Html
         , li
         , label
         , input
+        , progress
         )
 import FontAwesome.Web as Icon
-import Html.Attributes exposing (class, href, classList, value, type_, attribute)
-import Html.Events exposing (onInput)
+import Html.Attributes
+    exposing
+        ( class
+        , href
+        , classList
+        , value
+        , type_
+        , attribute
+        , id
+        )
+import Html.Events exposing (onInput, on)
 import Pure
 import Model
     exposing
@@ -35,6 +45,8 @@ import Model
         , TextModel
         , Shape(..)
         , Tool(..)
+        , ImageUpload(..)
+        , Upload(..)
         )
 import Msg
     exposing
@@ -47,6 +59,9 @@ import Msg
             , BeginDrag
             , EndDrag
             , SelectedShapeAction
+            , BeginImageUpload
+            , CancelImageUpload
+            , StoreFile
             )
         , ShapeAction(..)
         , TextAction(..)
@@ -78,27 +93,89 @@ import Json.Decode as Decode
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ header
-            []
-            [ h1 [] [ text "Elm SVG Editor" ]
-            , p []
-                [ text "from "
-                , a [ href "https://www.dailydrip.com" ] [ text "DailyDrip" ]
+    let
+        drawingAreaOrImageUpload =
+            case model.imageUpload of
+                Nothing ->
+                    drawingArea
+                        model.selectedShapeId
+                        model.shapes
+                        model.selectedTool
+                        model.mouse
+                        model.shapeOrdering
+
+                Just imageUpload ->
+                    imageUploadView imageUpload
+    in
+        div []
+            [ header
+                []
+                [ h1 [] [ text "Elm SVG Editor" ]
+                , p []
+                    [ text "from "
+                    , a [ href "https://www.dailydrip.com" ] [ text "DailyDrip" ]
+                    ]
+                , authenticationSection model
                 ]
-            , authenticationSection model
+            , div
+                [ class Pure.grid ]
+                [ sidebar model.selectedShapeId model.shapes model.mouse model.selectedTool
+                , drawingAreaOrImageUpload
+                ]
             ]
-        , div
-            [ class Pure.grid ]
-            [ sidebar model.selectedShapeId model.shapes model.mouse model.selectedTool
-            , drawingArea
-                model.selectedShapeId
-                model.shapes
-                model.selectedTool
-                model.mouse
-                model.shapeOrdering
-            ]
-        ]
+
+
+imageUploadView : ImageUpload -> Html Msg
+imageUploadView imageUpload =
+    let
+        contents =
+            case imageUpload of
+                AwaitingFileSelection _ ->
+                    [ input
+                        [ type_ "file"
+                        , id "imageUpload"
+                        , on "change" <|
+                            Decode.succeed <|
+                                StoreFile "imageUpload"
+                        ]
+                        []
+                    , button
+                        [ onClick CancelImageUpload ]
+                        [ text "Cancel" ]
+                    ]
+
+                AwaitingCompletion _ upload ->
+                    case upload of
+                        Running p ->
+                            [ progress
+                                [ value (toString p)
+                                , Html.Attributes.max "100"
+                                ]
+                                []
+                            ]
+
+                        Paused p ->
+                            [ progress
+                                [ value (toString p)
+                                , Html.Attributes.max "100"
+                                ]
+                                []
+                            , text "(paused)"
+                            ]
+
+                        Errored error ->
+                            [ text <|
+                                "error: "
+                                    ++ error
+                            ]
+
+                        Completed _ ->
+                            [ text "completed but you should never see me"
+                            ]
+    in
+        section
+            [ class <| "drawing-area " ++ Pure.unit [ "7", "8" ] ]
+            contents
 
 
 authenticationSection : Model -> Html Msg
@@ -342,6 +419,7 @@ tools =
     , ( RectTool, Icon.square_o )
     , ( CircleTool, Icon.circle_o )
     , ( TextTool, icon "font" )
+    , ( ImageTool, Icon.picture_o )
     ]
 
 
@@ -571,6 +649,9 @@ onDrawingAreaClick tool mouse =
                     , strokeWidth = 0
                     }
                 )
+
+        ImageTool ->
+            BeginImageUpload mouse.svgPosition
 
 
 onPreventingDefault : String -> Msg -> Svg.Attribute Msg
