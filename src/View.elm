@@ -354,6 +354,7 @@ viewUnselectedImage selectedTool shapeId imageModel =
          , width (toString imageModel.width)
          , height (toString imageModel.height)
          , xlinkHref imageModel.href
+         , preserveAspectRatio "none"
          ]
             ++ (onShapeClick selectedTool shapeId)
         )

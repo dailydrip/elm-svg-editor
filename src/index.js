@@ -53,8 +53,6 @@ app.ports.storeFile.subscribe((id) => {
       filename: file.name
     }
 
-    console.log(fileData)
-
     let path = basePath + '/' + fileData.filename
     let storageRef = storage.ref(path)
 
