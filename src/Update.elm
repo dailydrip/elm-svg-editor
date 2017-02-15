@@ -490,6 +490,28 @@ handleDragAction dragAction shapeId shape pos ({ mouse } as model) =
                                         | r = newR
                                     }
 
+                        ( Image imageModel, Just (Image compImage) ) ->
+                            let
+                                ( newX, newWidth ) =
+                                    if pos.x <= compImage.x then
+                                        ( pos.x, compImage.x - pos.x )
+                                    else
+                                        ( compImage.x, pos.x - compImage.x )
+
+                                ( newY, newHeight ) =
+                                    if pos.y <= compImage.y then
+                                        ( pos.y, compImage.y - pos.y )
+                                    else
+                                        ( compImage.y, pos.y - compImage.y )
+                            in
+                                Image
+                                    { imageModel
+                                        | height = newHeight
+                                        , width = newWidth
+                                        , x = newX
+                                        , y = newY
+                                    }
+
                         _ ->
                             shape
     in
