@@ -5,6 +5,7 @@ module Model
         , RectModel
         , CircleModel
         , TextModel
+        , ImageModel
         , SvgPosition
         , Shape(..)
         , Tool(..)
@@ -90,6 +91,7 @@ type Shape
     = Rect RectModel
     | Circle CircleModel
     | Text TextModel
+    | Image ImageModel
 
 
 type alias RectModel =
@@ -122,6 +124,15 @@ type alias TextModel =
     , stroke : String
     , strokeWidth : Float
     , fill : String
+    }
+
+
+type alias ImageModel =
+    { x : Float
+    , y : Float
+    , width : Float
+    , height : Float
+    , href : String
     }
 
 

@@ -200,8 +200,20 @@ handleImageUpload model svgPosition value =
                         let
                             _ =
                                 Debug.log "image is available at" fileUrl
+
+                            imageShape =
+                                Image
+                                    { x = svgPosition.x
+                                    , y = svgPosition.y
+                                    , width = 100
+                                    , height = 100
+                                    , href = fileUrl
+                                    }
+
+                            nextModel =
+                                addShape imageShape model
                         in
-                            { model | imageUpload = Nothing }
+                            { nextModel | imageUpload = Nothing }
 
                     -- Otherwise, we'll update the imageUpload with the upload
                     -- state
@@ -455,6 +467,13 @@ handleDragAction dragAction shapeId shape pos ({ mouse } as model) =
                                         , y = textModel.y - dragDiffY
                                     }
 
+                            Image imageModel ->
+                                Image
+                                    { imageModel
+                                        | x = imageModel.x - dragDiffX
+                                        , y = imageModel.y - dragDiffY
+                                    }
+
                 DragResize ->
                     case ( shape, model.comparedShape ) of
                         ( Rect rectModel, Just (Rect compRect) ) ->
@@ -493,6 +512,28 @@ handleDragAction dragAction shapeId shape pos ({ mouse } as model) =
                                 Circle
                                     { circleModel
                                         | r = newR
+                                    }
+
+                        ( Image imageModel, Just (Image compImage) ) ->
+                            let
+                                ( newX, newWidth ) =
+                                    if pos.x <= compImage.x then
+                                        ( pos.x, compImage.x - pos.x )
+                                    else
+                                        ( compImage.x, pos.x - compImage.x )
+
+                                ( newY, newHeight ) =
+                                    if pos.y <= compImage.y then
+                                        ( pos.y, compImage.y - pos.y )
+                                    else
+                                        ( compImage.y, pos.y - compImage.y )
+                            in
+                                Image
+                                    { imageModel
+                                        | height = newHeight
+                                        , width = newWidth
+                                        , x = newX
+                                        , y = newY
                                     }
 
                         _ ->

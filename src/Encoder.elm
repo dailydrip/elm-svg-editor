@@ -56,3 +56,13 @@ shapeEncoder shape =
                 , ( "strokeWidth", float textModel.strokeWidth )
                 , ( "fill", string textModel.fill )
                 ]
+
+        Image imageModel ->
+            object <|
+                [ ( "type", string "image" )
+                , ( "x", float imageModel.x )
+                , ( "y", float imageModel.y )
+                , ( "width", float imageModel.width )
+                , ( "height", float imageModel.height )
+                , ( "href", string imageModel.href )
+                ]

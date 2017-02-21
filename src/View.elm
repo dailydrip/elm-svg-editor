@@ -43,6 +43,7 @@ import Model
         , RectModel
         , CircleModel
         , TextModel
+        , ImageModel
         , Shape(..)
         , Tool(..)
         , ImageUpload(..)
@@ -67,7 +68,7 @@ import Msg
         , TextAction(..)
         , RectAction(..)
         )
-import Svg exposing (Svg, svg, rect, circle, g)
+import Svg exposing (Svg, svg, rect, circle, g, image)
 import Svg.Attributes as SA
     exposing
         ( viewBox
@@ -83,6 +84,7 @@ import Svg.Attributes as SA
         , r
         , cx
         , cy
+        , xlinkHref
         )
 import Svg.Events exposing (onClick)
 import Html.Events exposing (onWithOptions)
@@ -256,6 +258,12 @@ viewShape selectedTool maybeSelectedShapeId shapeId shape =
             Model.Text textModel ->
                 viewText selectedTool selected shapeId textModel
 
+            Image imageModel ->
+                viewImage selectedTool
+                    selected
+                    shapeId
+                    imageModel
+
 
 selectionAttributes : Tool -> List (Svg.Attribute Msg)
 selectionAttributes tool =
@@ -313,6 +321,50 @@ viewUnselectedText selectedTool shapeId textModel =
             ++ (onShapeClick selectedTool shapeId)
         )
         [ Svg.text textModel.content ]
+
+
+viewImage : Tool -> Bool -> Int -> ImageModel -> Svg Msg
+viewImage selectedTool selected shapeId imageModel =
+    let
+        imageSelection =
+            rect
+                ([ x (toString imageModel.x)
+                 , y (toString imageModel.y)
+                 , width (toString imageModel.width)
+                 , height (toString imageModel.height)
+                 ]
+                    ++ (selectionAttributes selectedTool)
+                )
+                []
+
+        groupChildren =
+            if selected then
+                [ viewUnselectedImage selectedTool shapeId imageModel
+                , imageSelection
+                , dragHandle
+                    ( imageModel.x + imageModel.width
+                    , imageModel.y + imageModel.height
+                    )
+                ]
+            else
+                [ viewUnselectedImage selectedTool shapeId imageModel ]
+    in
+        g [] groupChildren
+
+
+viewUnselectedImage : Tool -> Int -> ImageModel -> Svg Msg
+viewUnselectedImage selectedTool shapeId imageModel =
+    image
+        ([ x (toString imageModel.x)
+         , y (toString imageModel.y)
+         , width (toString imageModel.width)
+         , height (toString imageModel.height)
+         , xlinkHref imageModel.href
+         , preserveAspectRatio "none"
+         ]
+            ++ (onShapeClick selectedTool shapeId)
+        )
+        []
 
 
 viewRect : Tool -> Bool -> Int -> RectModel -> Svg Msg
