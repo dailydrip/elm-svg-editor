@@ -19,6 +19,7 @@ import Encoder exposing (shapesEncoder)
 import Ports exposing (persistShapes)
 import Json.Decode as Decode
 import Decoder exposing (shapesDecoder, userDecoder, uploadDecoder)
+import ContextMenu
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -175,6 +176,13 @@ update msg ({ mouse } as model) =
 
                 _ ->
                     model ! []
+
+        ContextMenuMsg cMsg ->
+            let
+                ( contextMenu, cmd ) =
+                    ContextMenu.update cMsg model.contextMenu
+            in
+                { model | contextMenu = contextMenu } ! [ Cmd.map ContextMenuMsg cmd ]
 
 
 

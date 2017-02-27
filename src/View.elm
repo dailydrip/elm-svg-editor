@@ -63,6 +63,7 @@ import Msg
             , BeginImageUpload
             , CancelImageUpload
             , StoreFile
+            , ContextMenuMsg
             )
         , ShapeAction(..)
         , TextAction(..)
@@ -91,6 +92,7 @@ import Html.Events exposing (onWithOptions)
 import Dict exposing (Dict)
 import Drag exposing (DragAction(..))
 import Json.Decode as Decode
+import ContextMenu
 
 
 view : Model -> Html Msg
@@ -124,6 +126,11 @@ view model =
                 [ sidebar model.selectedShapeId model.shapes model.mouse model.selectedTool
                 , drawingAreaOrImageUpload
                 ]
+            , ContextMenu.view
+                ContextMenu.defaultConfig
+                ContextMenuMsg
+                toItemGroups
+                model.contextMenu
             ]
 
 
@@ -406,6 +413,7 @@ viewUnselectedRect selectedTool shapeId rectModel =
          , stroke rectModel.stroke
          , strokeWidth (toString rectModel.strokeWidth)
          , fill rectModel.fill
+         , ContextMenu.open ContextMenuMsg shapeId
          ]
             ++ (onShapeClick selectedTool shapeId)
         )
@@ -761,3 +769,10 @@ icon s =
 fontClass : String -> String
 fontClass s =
     "fa fa-" ++ s
+
+
+toItemGroups : Int -> List (List ( ContextMenu.Item, Msg ))
+toItemGroups shapeId =
+    [ [ ( ContextMenu.item "Select", SelectShape shapeId )
+      ]
+    ]

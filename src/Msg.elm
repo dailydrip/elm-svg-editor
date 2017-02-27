@@ -11,6 +11,7 @@ import Model exposing (Shape(..), Tool(..), SvgPosition)
 import Mouse
 import Drag exposing (DragAction)
 import Json.Encode exposing (Value)
+import ContextMenu
 
 
 type Msg
@@ -34,6 +35,7 @@ type Msg
     | CancelImageUpload
     | StoreFile String
     | ReceiveFileStorageUpdate Value
+    | ContextMenuMsg (ContextMenu.Msg Int)
 
 
 type ShapeAction

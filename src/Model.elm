@@ -10,7 +10,6 @@ module Model
         , Shape(..)
         , Tool(..)
         , User
-        , initialModel
         , ImageUpload(..)
         , Upload(..)
         )
@@ -18,6 +17,7 @@ module Model
 import Mouse
 import Dict exposing (Dict)
 import Drag exposing (DragAction)
+import ContextMenu exposing (ContextMenu)
 
 
 -- We're going to have two cases for an ImageUpload - it's either waiting for a
@@ -47,6 +47,7 @@ type Upload
 
 type alias Model =
     { mouse : MouseModel
+    , contextMenu : ContextMenu Int
     , shapes : Dict Int Shape
     , shapeOrdering : Dict Int Int
     , selectedShapeId : Maybe Int
@@ -134,52 +135,3 @@ type alias ImageModel =
     , height : Float
     , href : String
     }
-
-
-initialModel : Model
-initialModel =
-    { mouse = initialMouseModel
-    , shapes = initialShapes
-    , shapeOrdering = Dict.empty
-    , selectedShapeId = Nothing
-    , selectedTool = PointerTool
-    , dragAction = Nothing
-    , comparedShape = Nothing
-    , user = Nothing
-    , imageUpload = Nothing
-    }
-
-
-initialMouseModel : MouseModel
-initialMouseModel =
-    { position = { x = 0, y = 0 }
-    , down = False
-    , svgPosition = { x = 0, y = 0 }
-    , downSvgPosition = { x = 0, y = 0 }
-    }
-
-
-initialShapes : Dict Int Shape
-initialShapes =
-    Dict.empty
-        |> Dict.insert 1
-            (Rect
-                { x = 200
-                , y = 200
-                , width = 200
-                , height = 200
-                , stroke = "#000000"
-                , strokeWidth = 10
-                , fill = "#ffffff"
-                }
-            )
-        |> Dict.insert 2
-            (Circle
-                { cx = 500
-                , cy = 200
-                , r = 50
-                , stroke = "#ff0000"
-                , strokeWidth = 10
-                , fill = "#00ffff"
-                }
-            )
