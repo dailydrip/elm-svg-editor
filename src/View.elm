@@ -64,6 +64,7 @@ import Msg
             , CancelImageUpload
             , StoreFile
             , ContextMenuMsg
+            , RemoveShape
             )
         , ShapeAction(..)
         , TextAction(..)
@@ -774,5 +775,6 @@ fontClass s =
 toItemGroups : Int -> List (List ( ContextMenu.Item, Msg ))
 toItemGroups shapeId =
     [ [ ( ContextMenu.item "Select", SelectShape shapeId )
+      , ( ContextMenu.item "Remove", RemoveShape shapeId )
       ]
     ]

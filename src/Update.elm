@@ -90,6 +90,12 @@ update msg ({ mouse } as model) =
             )
                 |> andSendShapes
 
+        RemoveShape shapeId ->
+            ( model |> removeShape shapeId
+            , Cmd.none
+            )
+                |> andSendShapes
+
         SelectTool tool ->
             { model | selectedTool = tool } ! []
 
@@ -553,6 +559,17 @@ handleDragAction dragAction shapeId shape pos ({ mouse } as model) =
                     newShape
                     model.shapes
         }
+
+
+removeShape : Int -> Model -> Model
+removeShape shapeId model =
+    let
+        nextShapes : Dict Int Shape
+        nextShapes =
+            model.shapes
+                |> Dict.remove shapeId
+    in
+        { model | shapes = nextShapes }
 
 
 addShape : Shape -> Model -> Model

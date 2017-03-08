@@ -22,6 +22,7 @@ type Msg
     | DeselectShape
     | SelectShape Int
     | AddShape Shape
+    | RemoveShape Int
     | SelectTool Tool
     | MouseSvgMove SvgPosition
     | BeginDrag DragAction
